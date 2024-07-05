@@ -130,7 +130,7 @@ const onDragEnd = () => {
 #timeline_container {
 
     position: absolute;
-    bottom: 20px;
+    bottom: 0px;
     /* background: rgba(50,147,230, 1); */
     background: linear-gradient(to right top, rgba(100,200,199, 1), rgba(50,147,230, 1));
     /* background-image: url('@/assets/background.jpg');
@@ -161,7 +161,7 @@ const onDragEnd = () => {
 
     .baseline_v {
         position: absolute;
-        height: 200px;
+        height: 190px;
         width: 1.3px;
         left: 50%;
         background: rgb(0, 0, 0, 0.8);
@@ -170,7 +170,7 @@ const onDragEnd = () => {
 
     .baseline_h {
         position: absolute;
-        bottom: 18px;
+        bottom: 28px;
         height: 1px;
         width: 100%;
         left: 0;
@@ -181,14 +181,14 @@ const onDragEnd = () => {
     .dragable_container {
         cursor: move;
         position: absolute;
-        height: 220px;
+        height: 215px;
 
         .rulermarker {
-            font-size: 7px;
+            font-size: 8px;
             position: absolute;
             bottom: 0px;
             z-index: 1000;
-            height: 12px;
+            height: 14px;
             line-height: 12px;
             color: rgba(255, 255, 255, 0.95);
             text-align: center;
@@ -200,8 +200,8 @@ const onDragEnd = () => {
                 position: absolute;
                 background: rgba(225, 225, 225, 1);
                 width: 1px;
-                height: 8px;
-                bottom: 15px;
+                height: 6px;
+                bottom: 18px;
                 left: 50%;
 
             }
@@ -210,8 +210,18 @@ const onDragEnd = () => {
         .year_type {
             font-size: 10px;
             width: 100px;
-            height: 12px;
-            color: rgba(235, 235, 235, 1);
+            height: 14px;
+            color: rgba(225, 225, 225, 1);
+            &::after {
+                content: "";
+                position: absolute;
+                background: rgba(225, 225, 225, 1);
+                width: 2px;
+                height: 8px;
+                bottom: 16px;
+                left: 50%;
+
+            }
         }
 
         .flagwraper {
@@ -241,7 +251,7 @@ const onDragEnd = () => {
                         text-align: left;
                         width: 100%;
                         font-size: 14px;
-                        /* font-weight: bold; */
+                        font-weight: bold;
                         line-height: 40px;
                     }
                 }
@@ -253,14 +263,14 @@ const onDragEnd = () => {
                 .pole {
                     width: 1px;
                     position: absolute;
-                    height: 200px;
+                    height: 190px;
                     top: 0;
                     background: rgba(0, 0, 0, 0.1);
                     z-index: 101;
 
                     .polefooter {
                         position: relative;
-                        top: 200px;
+                        top: 190px;
                         left: -1.5px;
                         width: 4px;
                         height: 4px;

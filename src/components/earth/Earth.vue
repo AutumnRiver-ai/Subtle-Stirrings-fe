@@ -136,7 +136,8 @@ const createMarker = (svg, projection, path, point) => {
     top: 0px;
     position: absolute;
     width: 100%;
-    height: calc(100vh - 240px);
+    padding-right: 10%;
+    height: calc(100vh - 220px);
 
     z-index: -1;
     display: flex;
