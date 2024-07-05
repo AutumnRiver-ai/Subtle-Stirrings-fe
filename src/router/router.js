@@ -10,18 +10,18 @@ const routes = [
         path: '/home',
         name: 'home',
         // component: Home,
-        component: () => import(/*webpackChunkName:'home'*/ "@/views/Home.vue"),
+        component: () => Home,
     },
     {
         path: '/news',
         name: 'news',
         // component: News,
-        component: () => import(/*webpackChunkName:'home'*/ "@/views/News.vue"),
+        component: () => News,
     },
     {
         path: '/timemap',
         name: 'timemap',
-        component: () => import(/*webpackChunkName:'home'*/ "@/views/Map.vue"),
+        component: () => Map,
     },
 ];
 
