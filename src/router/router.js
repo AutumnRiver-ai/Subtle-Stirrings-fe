@@ -1,5 +1,5 @@
 
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Map from '@/views/Map.vue'; // 导入你的组件
 import News from '@/views/News.vue'; // 导入你的组件
 import Home from '@/views/Home.vue'; // 导入你的组件
@@ -26,7 +26,7 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createWebHistory(), // 使用 HTML5 History API
+    history: createWebHashHistory(), // 使用 HTML5 History API
     routes,
 });
 
