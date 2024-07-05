@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    // ... other options ...
+    "module": "esnext", // 支持 ES 模块语法
+    "moduleResolution": "node", // 使用 Node.js 模块解析机制
+    "allowSyntheticDefaultImports": true, // 允许从默认导出导入
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "es2015",
+      "dom"
+    ]
+  }
+}
