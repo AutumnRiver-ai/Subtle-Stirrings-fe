@@ -11,20 +11,21 @@ const routes = [
         path: '/home',
         name: 'home',
         // component: Home,
-        component: () => Home,
+        component: () => import(/*webpackChunkName:'home'*/ "@/views/Home.vue"),
     },
     {
         path: '/news',
         name: 'news',
         // component: News,
-        component: () => News,
+        component: () => import(/*webpackChunkName:'home'*/ "@/views/News.vue"),
     },
     {
         path: '/timemap',
         name: 'timemap',
-        component: () => Map,
+        component: () => import(/*webpackChunkName:'home'*/ "@/views/Map.vue"),
     },
 ];
+
 
 const router = createRouter({
     history: createWebHistory(), // 使用 HTML5 History API
