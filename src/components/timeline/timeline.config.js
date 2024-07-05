@@ -28,7 +28,7 @@ const timelineConfig = {
 			"time":"2024-03-01",
 			"location": [0, 51],
 			"title": "伦敦",
-			"content": "伦敦股市",
+			"content": "伦敦股市连续三日大涨",
 			"img": "https://pic.uhzcdn.com/onlinetips/cdn/2017/05/1-3.jpg",
 			"row":2
 		},
