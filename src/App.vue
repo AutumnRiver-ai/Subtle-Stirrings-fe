@@ -1,10 +1,8 @@
 <script setup>
-import News from './components/News.vue'
 </script>
 
 <template>
-  <News />
+  <router-view />
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

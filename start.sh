@@ -6,5 +6,5 @@
 cd /home/lighthouse/Subtle-Stirrings-fe
 sudo mv  ./dist /usr/share/nginx
 cd /usr/share/nginx
-mv dist html
+sudo mv dist html
 sudo systemctl restart nginx

@@ -9,12 +9,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
+    "@antv/l7": "^2.22.0",
+    "@antv/l7-layers": "^2.22.0",
+    "@antv/l7-maps": "^2.22.0",
     "ant-design-vue": "^4.2.3",
     "axios": "^1.7.2",
     "build": "^0.1.4",
-    "vue": "^3.4.29"
+    "d3": "^7.9.0",
+    "esbuild-plugin-decorators": "^0.0.3",
+    "internmap": "^2.0.3",
+    "rxjs": "^7.8.1",
+    "vue": "^3.4.29",
+    "vue-router": "^4.4.0",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@vitejs/plugin-vue": "^5.0.5",
     "vite": "^5.3.1"
   }
