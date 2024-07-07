@@ -3,7 +3,7 @@
   registry: 'https://registry.npmmirror.com',
   pkgs: [
     {
-      name: '@types/d3',
+      name: '@types/vuex',
       version: 'latest',
       type: 'tag',
       alias: undefined,
@@ -15,7 +15,7 @@
   cacheDir: '/Users/sklongger/.npminstall_tarball',
   env: {
     npm_config_registry: 'https://registry.npmmirror.com',
-    npm_config_argv: '{"remain":[],"cooked":["--fix-bug-versions","--china","--userconfig=/Users/sklongger/.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","@types/d3","--save-dev"],"original":["--fix-bug-versions","--china","--userconfig=/Users/sklongger/.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","@types/d3","--save-dev"]}',
+    npm_config_argv: '{"remain":[],"cooked":["--fix-bug-versions","--china","--userconfig=/Users/sklongger/.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","@types/vuex","--save-dev"],"original":["--fix-bug-versions","--china","--userconfig=/Users/sklongger/.cnpmrc","--disturl=https://cdn.npmmirror.com/binaries/node","--registry=https://registry.npmmirror.com","@types/vuex","--save-dev"]}',
     npm_config_user_agent: 'npminstall/7.12.0 npm/? node/v20.14.0 darwin x64',
     npm_config_cache: '/Users/sklongger/.npminstall_tarball',
     NODE: '/usr/local/bin/node',
