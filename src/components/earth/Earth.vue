@@ -1,45 +1,59 @@
 <template>
-    <div id="globe" class="globe-container">
+    <div id="globe-container" class="globe-container">
+        <transition name="slide-fade">
+            <div id="globe" v-show="!cardShow"></div>
+        </transition>
     </div>
-    <div class="card">
-        <a-card hoverable style="max-width: 100%; max-height: 100%; z-index: -1;">
-            <template #cover>
-                <img alt="example" :src="cardInfo.cardImg" />
-            </template>
-            <a-card-meta :title="cardInfo.cardContent">
-                <!-- <template #description>
-                    {{ cardInfo.cardContent }}
-                    {{ cardInfo.cardImg }}
-                </template> -->
-            </a-card-meta>
-        </a-card>
-    </div>
-
+    <transition name="slide-fade">
+        <div class="card" v-show="cardShow">
+            <a-card hoverable style="max-width: 100%; max-height: 100%; z-index: -1;">
+                <template #cover>
+                    <img alt="example" :src="cardInfo.cardImg" />
+                </template>
+                <a-card-meta :title="cardInfo.cardContent">
+                    <template #description>
+                        {{ cardInfo.cardContent }}
+                    </template>
+                </a-card-meta>
+            </a-card>
+        </div>
+    </transition>
 </template>
 
 <script setup lang='ts'>
 import * as d3 from 'd3';
-import { onMounted, computed, render, h, reactive } from 'vue';
+import { onMounted, computed, render, h, reactive, ref } from 'vue';
 import { useStore } from 'vuex';
 import { EnvironmentTwoTone } from '@ant-design/icons-vue';
 import { Tooltip } from 'ant-design-vue';
+import styleConfig from '@/utils/styleConfig.js';
 const store = useStore();
-const size = 1000;
-const cardInfo = reactive({
+
+interface CardInfo {
+    cardContent: string;
+    cardImg: string;
+}
+
+const cardInfo: CardInfo = reactive({
     cardContent: "纽约州法院取消特朗普前私人律师朱利安尼的律师资格",
     cardImg: 'https://mediabluk.cnr.cn/record/img/cnr/CNRCDP/2023/0609/a9597944f437430fbee597cab4c9bf7e10.jpg'
 })
-const LANDCOLOR = 'lightblue'
-// const LANDCOLOR = '#F9F871'
-const CONTRYCOLOR = 'black'
-const OCEANCOLOR = '#bbb'
-// const OCEANCOLOR = '#1FB4FA'
+let cardShow = ref(false)
+// const LANDCOLOR = 'lightblue'
+// const COUNTRYCOLOR = 'lightblue'
+// const OCEANCOLOR = '#bbb'
+
+const OCEANCOLOR = styleConfig['earth']['ocean-color']
+const LANDCOLOR = styleConfig['earth']['land-color']
+const COUNTRYCOLOR = styleConfig['earth']['country-color']
+const COUNTRYBORDER = styleConfig['earth']['country-border']
+const SIZE = styleConfig['earth']['globe-size']
 onMounted(() => {
     // return
     // 地图投影
     const projection = d3.geoOrthographic()
-        .scale(size / 2 - 0.5)
-        .translate([size / 2, size / 2])
+        .scale(SIZE / 2 - 0.5)
+        .translate([SIZE / 2, SIZE / 2])
 
     const path = d3.geoPath().projection(projection);
     store.subscribe((mutation, state) => {
@@ -53,8 +67,8 @@ onMounted(() => {
     // 创建 SVG 元素
     const svg = d3.select("#globe")
         .append("svg")
-        .attr("width", size)
-        .attr("height", size)
+        .attr("width", SIZE)
+        .attr("height", SIZE)
         .style("background-color", OCEANCOLOR)
         .style('border-radius', '50%');
 
@@ -68,8 +82,8 @@ onMounted(() => {
                 .append("path")
                 .attr("d", path)
                 .attr("fill", LANDCOLOR)
-                .attr("stroke", CONTRYCOLOR)
-                .attr("stroke-width", 0.1);
+                .attr("stroke", COUNTRYCOLOR)
+                .attr("stroke-width", COUNTRYBORDER);
             // 添加旋转动画
             centerPosition(svg, projection, path, [-116, 23 - 40], [-116, 23 - 40], false);
             store.subscribe((mutation, state) => {
@@ -86,10 +100,9 @@ onMounted(() => {
         })
 });
 const centerPosition = (svg, projection, path, pointStart, pointEnd, animate = true) => {
-    // svg.select('circle').remove();
+    cardShow.value = false
     svg.select('foreignObject').remove();
     let duration = 2500;
-    console.log(animate)
     if (!animate) {
         duration = 0;
     }
@@ -104,6 +117,9 @@ const centerPosition = (svg, projection, path, pointStart, pointEnd, animate = t
         })
         .on("end", () => {
             createMarker(svg, projection, path, pointEnd);
+            setTimeout(() => {
+                cardShow.value = true
+            }, 1500)
         });
 
 
@@ -113,8 +129,8 @@ const createMarker = (svg, projection, path, point) => {
     const latitude = point[1];
     const [x, y] = projection([-longitude, 23 - latitude]);
     let [offsetX, offsetY] = projection.translate()
-    offsetX = offsetX - size / 2;
-    offsetY = offsetY - size / 2
+    offsetX = offsetX - SIZE / 2;
+    offsetY = offsetY - SIZE / 2
     const iconSize = 40
     svg.append("foreignObject")
         .attr("x", x + offsetX - iconSize / 2)
@@ -132,33 +148,66 @@ const createMarker = (svg, projection, path, point) => {
 </script>
 
 <style scoped>
+/* .v-enter-active,
+.v-leave-active {
+    transition: opacity 2.2s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+    opacity: 0;
+} */
+
+.slide-fade-enter-active {
+    transition: all 0.8s ease-out;
+}
+
+.slide-fade-leave-active {
+    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateX(20px);
+    opacity: 0;
+}
+
+
 .globe-container {
     top: 0px;
+    /* left: -10%; */
     position: absolute;
-    width: 100%;
-    padding-right: 10%;
+    min-width: 100%;
+    max-width: 100%;
+    padding: 0 20% 0 0;
     height: calc(100vh - 220px);
 
     z-index: -1;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
 
     /* border: 1px solid black;
     background: rgba(0, 0, 0, 0.1); */
-    background: rgba(0, 0, 0, 0.1);
-    background: linear-gradient(to right bottom, rgba(249, 248, 113, 0.3), rgba(249, 100, 13, 0.5));
-    /* background-image: url('@/assets/background.jpg'); */
+    /* background: rgba(0, 0, 0, 0.1);
+    background: linear-gradient(to right bottom, rgba(249, 248, 113, 0.3), rgba(249, 100, 13, 0.5)); */
+    background-image: url('@/assets/background8.jpeg');
+    background-size: cover;
+    background-position: center;
 }
+
 
 .card {
     position: absolute;
     right: 50px;
     top: 190px;
-    max-width: 600px;
-    max-height: 600px;
-    /* background: red; */
-
+    margin: 0 auto;
+    max-width: 500px;
+    max-height: 500px;
+    padding: 0;
+    /* box-shadow: inset 0 5px 20px rgba(255, 255, 255, 0.7); */
+    box-shadow: 10px 10px 10px #ccc;
+    border-radius: 10px;
+    /* border: 10px; */
 }
 </style>

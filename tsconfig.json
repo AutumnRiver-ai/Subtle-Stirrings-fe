@@ -7,9 +7,27 @@
     "typeRoots": [
       "node_modules/@types"
     ],
+    "types": [
+      "vue", // 添加类型声明文件
+      "vuex"
+    ],
+    "baseUrl": "./", // 设置 baseUrl 为项目根目录
+    "paths": { // 路径别名
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "resolveJsonModule": true,
     "lib": [
       "es2015",
       "dom"
     ]
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/**/*.jpg"
+  ],
 }

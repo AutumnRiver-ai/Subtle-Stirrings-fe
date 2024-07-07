@@ -2,6 +2,8 @@
     <div id="timeline_container">
         <div id="toolbox">
             <HomeTwoTone :style="{ fontSize: '20px' }" @click="toolClick('home')" />
+            <PlayCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('play')" v-if="!recording" />
+            <PauseCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('stop')" v-if="recording" />
             <PlusCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('magnify')" />
             <MinusCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('reduce')" />
         </div>
@@ -34,15 +36,17 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 import { ref, reactive, onMounted, onBeforeMount } from 'vue';
 import axios from 'axios';
 import timelineConfig from '@/components/timeline/timeline.config.js';
 import iconURL from '@/assets/icon.jpg';
-import { renderTimeline } from '@/components/timeline/renderTimeline';
-import { PlusCircleTwoTone, MinusCircleTwoTone, HomeTwoTone } from '@ant-design/icons-vue';
+import { renderTimeline } from '@/components/timeline/renderTimeline.js';
+import { PlusCircleTwoTone, MinusCircleTwoTone, HomeTwoTone, PlayCircleTwoTone, PauseCircleTwoTone } from '@ant-design/icons-vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
+import { recordVideo, stopRecordVideo } from '@/utils/record.js';
+const ANIMATEDURATION = 2700 + 2000 + 550
 const router = useRouter()
 
 const timelineData = timelineConfig;
@@ -51,6 +55,7 @@ const timeline = timelineData["timeline"];
 const refreshFlag = ref(true)
 const store = useStore();
 const testID = ref(1);
+let recording = ref(false);
 const vm = new renderTimeline()
 
 
@@ -60,7 +65,7 @@ onMounted(() => {
     //     clickFlag(0);
     // }, 50)
 
-    // auto()
+    // play()
 })
 
 const renderFlags = () => {
@@ -84,7 +89,7 @@ const goToFlag = (index) => {
     timeline.init = true;
 };
 
-const toolClick = (type) => {
+const toolClick = async (type) => {
     const factor = 1.5
     if (type === 'magnify') {
         timelineData.timeline.ruler *= factor;
@@ -96,16 +101,55 @@ const toolClick = (type) => {
         router.replace({
             name: 'news'
         })
+    } else if (type == 'play') {
+        recording.value = true
+        await recordVideo();
+        play(0);
+    } else if (type == 'stop') {
+        await stopRecordVideo();
+        recording.value = false
     }
     renderFlags();
 };
 
-const auto = () => {
-    let index = 0
-    let intervalId = setInterval(() => {
-        clickFlag(index);
-        index = (index + 1) % flags.length;
-    }, 5000);
+const play = (flagIndex) => {
+    // if (index == 0) {
+    //     renderFlags();
+    // }
+    let duration = 2000 + ANIMATEDURATION
+    console.log(flagIndex)
+    clickFlag(flagIndex);
+    setTimeout(() => {
+        console.log(flagIndex)
+        flagIndex += 1
+        if (flagIndex != flags.length) {
+            play(flagIndex)
+        } else {
+            toolClick('stop')
+        }
+
+    }, duration)
+    // console.log(timeline.activeFlag)
+    // console.log(flags[0])
+    // let duration = 2000;
+    // if (flagIndex > 0) {
+    //     duration = 2000 + ANIMATEDURATION
+    // }
+    // console.log(flagIndex)
+    // if (flagIndex! = flags.length) {
+    //     console.log(flagIndex)
+    //     setTimeout(() => {
+    //         console.log(flagIndex)
+    //         // clickFlag(index);
+    //         // index = (index + 1);
+    //         // play(index)
+    //     }, 0)
+    // } else {
+    //     setTimeout(() => {
+    //         toolClick('stop')
+    //     }, duration)
+    // }
+
 }
 
 // 拖动事件
@@ -131,23 +175,36 @@ const onDragEnd = () => {
 
     position: absolute;
     bottom: 0px;
-    /* background: rgba(50,147,230, 1); */
-    background: linear-gradient(to right top, rgba(100,200,199, 1), rgba(50,147,230, 1));
-    /* background-image: url('@/assets/background.jpg');
-    background-repeat: repeat-x;
-    background-color: rgba(31, 180, 250, 0.8);
-    background-blend-mode: overlay; */
+    /* border: 10px 10px solid #ccc;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); */
+    box-shadow: inset 0 5px 20px rgba(255, 255, 255, 0.7);
+    /* box-shadow: rgba(50, 147, 230, 1); */
+    background: linear-gradient(to right top, rgba(100, 200, 199, 1), rgba(50, 147, 230, 1));
+    /* 
+    &::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right top, rgba(100, 200, 199, 1), rgba(50, 147, 230, 1));
+    } */
+
+    /* background-size: 200% 150%;
+    background-repeat: no-repeat;
+    background-position: center; */
     width: 100%;
     height: 220px;
     overflow: hidden;
 
     #toolbox {
         position: absolute;
-        top: 50%;
+        top: 42%;
         transform: translate(0%, -50%);
         /* 使用translate属性水平垂直居中 */
         font-size: 12px;
-        height: 70%;
+        height: 76%;
         width: 30px;
         background: rgba(253, 254, 240, 0.8);
         z-index: 100;
@@ -162,7 +219,7 @@ const onDragEnd = () => {
     .baseline_v {
         position: absolute;
         height: 190px;
-        width: 1.3px;
+        width: 1.5px;
         left: 50%;
         background: rgb(0, 0, 0, 0.8);
         z-index: 100;
@@ -190,7 +247,7 @@ const onDragEnd = () => {
             z-index: 1000;
             height: 14px;
             line-height: 12px;
-            color: rgba(255, 255, 255, 0.95);
+            color: rgba(255, 255, 255, 1);
             text-align: center;
             left: 50%;
             width: 65px;
@@ -212,6 +269,7 @@ const onDragEnd = () => {
             width: 100px;
             height: 14px;
             color: rgba(225, 225, 225, 1);
+
             &::after {
                 content: "";
                 position: absolute;
@@ -232,32 +290,34 @@ const onDragEnd = () => {
                 position: absolute;
 
                 .marker {
-                    /* border: #fff solid 3px; */
                     position: absolute;
                     border-radius: 5px;
-                    background: rgba(167,247,139,0.5);
+                    background: rgb(181, 228, 207);
+                    border-radius: 0px 10px 10px 0px;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
 
                     .icon {
                         margin: 4px;
-                        width: 30px;
+                        width: 35px;
                         height: auto;
                     }
 
                     .content {
-                        padding: 0 10px;
+                        color: black;
+                        padding: 0 4px;
                         text-align: left;
                         width: 100%;
-                        font-size: 14px;
+                        font-size: 12px;
                         font-weight: bold;
                         line-height: 40px;
                     }
                 }
 
                 .marker_active {
-                    background: rgba(167,247,139,0.8);
+                    background: rgba(167, 247, 139, 1);
+                    z-index: 99;
                 }
 
                 .pole {

@@ -5,9 +5,9 @@ const timelineConfig = {
 		"containerHeight":220,
 		"activeFlag": 0,
 		"offset": 0,
-		"flagWidth": 130,
+		"flagWidth": 120,
 		"init": false,
-		"rulerNum": 10,
+		"rulerNum": 6,
 		"rulerMarkers": [
 			{
 				"time": null,
