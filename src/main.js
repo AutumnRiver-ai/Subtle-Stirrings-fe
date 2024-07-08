@@ -9,7 +9,7 @@ import {TimelineFlag, TimelineDrag} from '@/components/timeline/directives.ts'
 import store from '@/store/store.ts';
 import router from '@/router/router.js';
 
-axios.defaults.baseURL = 'http://101.42.16.7:8012'; // 设置全局 baseURL
+axios.defaults.baseURL = 'http://101.42.16.7/subtle'; // 设置全局 baseURL
 // axios.defaults.baseURL = 'http://127.0.0.1:8012'; // 设置全局 baseURL
 axios.defaults.timeout = 5 * 60 * 1000; 
 
