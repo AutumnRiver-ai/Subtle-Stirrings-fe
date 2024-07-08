@@ -191,7 +191,7 @@ const createMarker = (svg, projection, path, point) => {
     background: rgba(0, 0, 0, 0.1); */
     /* background: rgba(0, 0, 0, 0.1);
     background: linear-gradient(to right bottom, rgba(249, 248, 113, 0.3), rgba(249, 100, 13, 0.5)); */
-    background-image: url('@/assets/background8.jpeg');
+    background-image: url('@/assets/background9.jpg');
     background-size: cover;
     background-position: center;
 }

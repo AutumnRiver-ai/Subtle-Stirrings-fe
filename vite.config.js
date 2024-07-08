@@ -14,6 +14,7 @@ export default defineConfig({
     }
   },
   server: {
+    host: '0.0.0.0',
     proxy: {
       '/api': {
         target: 'https://geojson.cn/api/data/china.json', // 您的 GeoJSON 文件所在服务器地址
