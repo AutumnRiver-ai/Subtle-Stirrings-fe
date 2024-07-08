@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-
+import timelineConfig from '@/components/timeline/timeline.config.js';
 
 const ONEDAYMILLSECONDS = 24 * 60 * 60 * 1000
 export class renderTimeline {
@@ -33,7 +33,7 @@ export class renderTimeline {
         let timeline = timelineData["timeline"];
         let flags = timelineData["flags"];
         if (!timeline["ruler"]) {
-            this.ruler = this.calRuler(flags, timeline["containerWidth"] * 0.5 - timeline["flagWidth"]);
+            this.ruler = this.calRuler(flags, timeline["containerWidth"] * (1 - timeline['baseLineOffset']) - timeline["flagWidth"] * 0.5);
             timeline["ruler"] = this.ruler;
         } else {
             this.ruler = timeline["ruler"];
@@ -82,6 +82,7 @@ export class renderTimeline {
         //前端显示的第一个时间刻度距离公元1年1月1日有多少天
         const baseDay = this.calBaseDay(timeline, flags);
         const daysInterval = days / ((timeline["rulerNum"] - 1) / 2);
+        const radius = daysInterval / 2;
         var rulerMarkers = timeline["rulerMarkers"];
         for (let i = 0; i < timeline["rulerNum"]; i++) {
             let _rulerMarker = {
@@ -91,10 +92,15 @@ export class renderTimeline {
             };
 
             rulerMarkers[i] = _rulerMarker;
-
             rulerMarkers[i]["time"] = new Date();
             rulerMarkers[i]["time"].setTime(baseDay.getTime() + i * daysInterval * ONEDAYMILLSECONDS);
-            rulerMarkers[i]["position"] = this.time2Position(rulerMarkers[i]["time"], flags, timeline);//rulerMarkers[i]["time"] * timeline["ruler"];
+            if (Math.abs(this.calInterval(rulerMarkers[i]["time"], flags[timeline["activeFlag"]]["time"])) <= radius) {
+                console.log('hereherehereherehere')
+                rulerMarkers[i]["time"].setTime(flags[timeline["activeFlag"]]["time"].getTime());
+                console.log(rulerMarkers[i]["time"].getTime(), flags[timeline["activeFlag"]]["time"].getTime())
+                console.log(this.time2Position(rulerMarkers[i]["time"], flags, timeline), flags[timeline["activeFlag"]]['position'])
+            }
+            rulerMarkers[i]["position"] = this.time2Position(rulerMarkers[i]["time"], flags, timeline) - timelineConfig['timeline']['rulerMarkerWidth'] * 0.5;//rulerMarkers[i]["time"] * timeline["ruler"];
             const { content, timeType } = this.time2Display(rulerMarkers[i]["time"]);
             rulerMarkers[i]["content"] = content;
             rulerMarkers[i]["timeType"] = timeType
@@ -135,7 +141,7 @@ export class renderTimeline {
     private time2Position(time, flags, timeline) {
         const baseTime = flags[0]["time"];
         const days = (time.getTime() - baseTime.getTime()) / ONEDAYMILLSECONDS;
-        const position = timeline["containerWidth"] * 0.5 + days * this.ruler;
+        const position = timeline["containerWidth"] * (timeline['baseLineOffset']) + days * this.ruler;
         return position;
     }
     private setRows(flags, timeline) {
@@ -174,6 +180,7 @@ export class renderTimeline {
         let offset = flags[0]["position"] - flags[timeline["activeFlag"]]["position"];
         timeline['offsetOld'] = timeline['offset'];
         timeline["offset"] = offset;
+        this.renderRulerMarkers(timelineData);
     }
 
     private sortFlags(flags) {

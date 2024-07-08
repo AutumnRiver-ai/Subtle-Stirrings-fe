@@ -7,15 +7,14 @@
             <PlusCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('magnify')" />
             <MinusCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('reduce')" />
         </div>
-        <div class="baseline_v"></div>
+        <div class="baseline_v" :style="{ left: `${timeline['baseLineOffset'] * 100}%` }"></div>
         <div class="baseline_h"></div>
         <div class="dragable_container" :style="{ left: timeline.offset + 'px' }"
-            v-TimelineDrag="{ timeline: timeline, refreshFlag: refreshFlag }" @mousedown="onDragStart"
-            @mousemove="onDragMove" @mouseup="onDragEnd">
+            v-TimelineDrag="{ timeline: timeline, refreshFlag: refreshFlag }">
             <div class="flagwraper">
                 <div v-for="(flag, index) in flags" :key="index"
-                    v-TimelineFlag="{ flag: flag, timeline: timeline, refreshFlag: refreshFlag }" class="timeflag"
-                    @click="clickFlag(index)">
+                    v-TimelineFlag="{ flag: flag, timeline: timeline, refreshFlag: refreshFlag, index: index }"
+                    class="timeflag" @click="clickFlag(index)">
                     <div class="marker" :class="{ 'marker_active': index == timeline.activeFlag }">
                         <img class="icon" :src=iconURL>
                         <div class='content'>{{ flag['title'] }}</div>
@@ -54,7 +53,6 @@ const flags = timelineData["flags"];
 const timeline = timelineData["timeline"];
 const refreshFlag = ref(true)
 const store = useStore();
-const testID = ref(1);
 let recording = ref(false);
 const vm = new renderTimeline()
 
@@ -76,10 +74,12 @@ const clickFlag = (index) => {
     goToFlag(index);
     refreshFlag.value = !refreshFlag.value
     const flag = flags[index]
-    store.commit('updateLocation', flag['location']);
     store.commit('updateContent', {
-        'content': flag['content'],
-        'img': flag['img']
+        content: {
+            'content': flag['content'],
+            'img': flag['img']
+        },
+        location: flag['location']
     });
 };
 
@@ -117,10 +117,8 @@ const play = (flagIndex) => {
     //     renderFlags();
     // }
     let duration = 2000 + ANIMATEDURATION
-    console.log(flagIndex)
     clickFlag(flagIndex);
     setTimeout(() => {
-        console.log(flagIndex)
         flagIndex += 1
         if (flagIndex != flags.length) {
             play(flagIndex)
@@ -129,44 +127,7 @@ const play = (flagIndex) => {
         }
 
     }, duration)
-    // console.log(timeline.activeFlag)
-    // console.log(flags[0])
-    // let duration = 2000;
-    // if (flagIndex > 0) {
-    //     duration = 2000 + ANIMATEDURATION
-    // }
-    // console.log(flagIndex)
-    // if (flagIndex! = flags.length) {
-    //     console.log(flagIndex)
-    //     setTimeout(() => {
-    //         console.log(flagIndex)
-    //         // clickFlag(index);
-    //         // index = (index + 1);
-    //         // play(index)
-    //     }, 0)
-    // } else {
-    //     setTimeout(() => {
-    //         toolClick('stop')
-    //     }, duration)
-    // }
-
 }
-
-// 拖动事件
-let isDragging = false;
-let startX = 0;
-
-const onDragStart = (event) => {
-    isDragging = true;
-    startX = event.clientX;
-};
-
-const onDragMove = (event) => {
-};
-
-const onDragEnd = () => {
-    isDragging = false;
-};
 
 </script>
 
@@ -175,25 +136,14 @@ const onDragEnd = () => {
 
     position: absolute;
     bottom: 0px;
-    /* border: 10px 10px solid #ccc;
-    border-top: 1px solid rgba(255, 255, 255, 0.1); */
-    box-shadow: inset 0 5px 20px rgba(255, 255, 255, 0.7);
-    /* box-shadow: rgba(50, 147, 230, 1); */
+    box-shadow: inset 0 10px 10px 0px rgba(255, 255, 255, 0.6);
     background: linear-gradient(to right top, rgba(100, 200, 199, 1), rgba(50, 147, 230, 1));
-    /* 
-    &::before {
-        content: '';
-        position: absolute;
-        top: 20px;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to right top, rgba(100, 200, 199, 1), rgba(50, 147, 230, 1));
-    } */
-
-    /* background-size: 200% 150%;
+    
+    /* background-image: url('@/assets/background2.jpg');
+    background-position: right;
     background-repeat: no-repeat;
-    background-position: center; */
+    background-size: contain; */
+
     width: 100%;
     height: 220px;
     overflow: hidden;
@@ -220,7 +170,7 @@ const onDragEnd = () => {
         position: absolute;
         height: 190px;
         width: 1.5px;
-        left: 50%;
+        left: 10%;
         background: rgb(0, 0, 0, 0.8);
         z-index: 100;
     }
@@ -244,13 +194,16 @@ const onDragEnd = () => {
             font-size: 8px;
             position: absolute;
             bottom: 0px;
-            z-index: 1000;
+            z-index: 100;
             height: 14px;
             line-height: 12px;
             color: rgba(255, 255, 255, 1);
             text-align: center;
-            left: 50%;
-            width: 65px;
+            /* left: 50%; */
+            width: 70px;
+            /* background: red;
+            border-right: 1px solid black; */
+            overflow: hidden;
 
             &::after {
                 content: "";
@@ -259,14 +212,14 @@ const onDragEnd = () => {
                 width: 1px;
                 height: 6px;
                 bottom: 18px;
-                left: 50%;
+                /* left: 50%; */
 
             }
         }
 
         .year_type {
             font-size: 10px;
-            width: 100px;
+            width: 70px;
             height: 14px;
             color: rgba(225, 225, 225, 1);
 
@@ -292,11 +245,21 @@ const onDragEnd = () => {
                 .marker {
                     position: absolute;
                     border-radius: 5px;
-                    background: rgb(181, 228, 207);
+                    background: linear-gradient(to bottom, rgba(181, 228, 207, 0.95), rgba(181, 228, 207, 0.8));
                     border-radius: 0px 10px 10px 0px;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+
+                    &::after {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 99.5%;
+                        height: 100%;
+                        border-radius: 0px 10px 10px 0px;
+                    }
 
                     .icon {
                         margin: 4px;
@@ -317,7 +280,7 @@ const onDragEnd = () => {
 
                 .marker_active {
                     background: rgba(167, 247, 139, 1);
-                    z-index: 99;
+                    /* z-index: 999; */
                 }
 
                 .pole {
