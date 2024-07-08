@@ -10,15 +10,11 @@ const store = createStore({
         };
     },
     mutations: {
-        // updateMessage(state, newMessage) {
-        //     state.message = newMessage;
-        // },
-        updateLocation(state, location) {
+        updateContent(state, data) {
+            const { content, location } = data;
+            state.content = content;
             state.preLocation = state.location
             state.location = location;
-        },
-        updateContent(state, content) {
-            state.content = content;
         }
     }
 });

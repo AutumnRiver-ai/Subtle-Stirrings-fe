@@ -1,22 +1,20 @@
 <template>
     <div id="globe-container" class="globe-container">
-        <transition name="slide-fade">
+        <transition name="globe-fade">
             <div id="globe" v-show="!cardShow"></div>
         </transition>
     </div>
-    <transition name="slide-fade">
-        <div class="card" v-show="cardShow">
-            <a-card hoverable style="max-width: 100%; max-height: 100%; z-index: -1;">
-                <template #cover>
-                    <img alt="example" :src="cardInfo.cardImg" />
+    <transition name="card-fade" class="card">
+        <a-card hoverable style="max-width: 100%; max-height: 100%; z-index: -1;" v-show="cardShow">
+            <template #cover>
+                <img alt="example" :src="cardInfo.cardImg" />
+            </template>
+            <a-card-meta :title="cardInfo.cardContent">
+                <template #description>
+                    {{ cardInfo.cardContent }}
                 </template>
-                <a-card-meta :title="cardInfo.cardContent">
-                    <template #description>
-                        {{ cardInfo.cardContent }}
-                    </template>
-                </a-card-meta>
-            </a-card>
-        </div>
+            </a-card-meta>
+        </a-card>
     </transition>
 </template>
 
@@ -56,13 +54,6 @@ onMounted(() => {
         .translate([SIZE / 2, SIZE / 2])
 
     const path = d3.geoPath().projection(projection);
-    store.subscribe((mutation, state) => {
-        if (mutation.type === 'updateContent') {
-            cardInfo.cardImg = state.content.img;
-            cardInfo.cardContent = state.content.content;
-            console.log(cardInfo);
-        }
-    });
 
     // 创建 SVG 元素
     const svg = d3.select("#globe")
@@ -85,26 +76,33 @@ onMounted(() => {
                 .attr("stroke", COUNTRYCOLOR)
                 .attr("stroke-width", COUNTRYBORDER);
             // 添加旋转动画
-            centerPosition(svg, projection, path, [-116, 23 - 40], [-116, 23 - 40], false);
+            centerPosition(svg, projection, path, {
+                location: [116, 39],
+                preLocation: [116, 39]
+            }, false);
+
             store.subscribe((mutation, state) => {
-                if (mutation.type === 'updateLocation') {
-                    const longitude = state.location[0];
-                    const latitude = state.location[1];
-                    const preLongitude = state.preLocation[0]
-                    const preLatitude = state.preLocation[1]
-                    // const preLongitude = 116
-                    // const preLatitude = 40
-                    centerPosition(svg, projection, path, [-preLongitude, 23 - preLatitude], [-longitude, 23 - latitude]);
+                if (mutation.type === 'updateContent') {
+                    centerPosition(svg, projection, path, state);
                 }
             });
         })
 });
-const centerPosition = (svg, projection, path, pointStart, pointEnd, animate = true) => {
+const centerPosition = (svg, projection, path, state, animate = true) => {
+    const longitude = state.location[0];
+    const latitude = state.location[1];
+    const preLongitude = state.preLocation[0]
+    const preLatitude = state.preLocation[1]
+    // const preLongitude = 116
+    // const preLatitude = 40
+    const pointStart = [-preLongitude, 23 - preLatitude]
+    const pointEnd = [-longitude, 23 - latitude]
+
     cardShow.value = false
     svg.select('foreignObject').remove();
     let duration = 2500;
     if (!animate) {
-        duration = 0;
+        duration = 10;
     }
     svg.transition()
         .duration(duration) // 设置动画持续时间为 2 秒
@@ -119,6 +117,10 @@ const centerPosition = (svg, projection, path, pointStart, pointEnd, animate = t
             createMarker(svg, projection, path, pointEnd);
             setTimeout(() => {
                 cardShow.value = true
+                if (state.content) {
+                    cardInfo.cardImg = state.content.img;
+                    cardInfo.cardContent = state.content.content;
+                }
             }, 1500)
         });
 
@@ -148,66 +150,64 @@ const createMarker = (svg, projection, path, point) => {
 </script>
 
 <style scoped>
-/* .v-enter-active,
-.v-leave-active {
-    transition: opacity 2.2s ease;
-}
-
-.v-enter-from,
-.v-leave-to {
-    opacity: 0;
-} */
-
-.slide-fade-enter-active {
-    transition: all 0.8s ease-out;
-}
-
-.slide-fade-leave-active {
-    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-    transform: translateX(20px);
-    opacity: 0;
-}
-
-
 .globe-container {
     top: 0px;
-    /* left: -10%; */
     position: absolute;
     min-width: 100%;
     max-width: 100%;
     padding: 0 20% 0 0;
     height: calc(100vh - 220px);
-
     z-index: -1;
     display: flex;
     justify-content: center;
     align-items: center;
-
-    /* border: 1px solid black;
-    background: rgba(0, 0, 0, 0.1); */
-    /* background: rgba(0, 0, 0, 0.1);
-    background: linear-gradient(to right bottom, rgba(249, 248, 113, 0.3), rgba(249, 100, 13, 0.5)); */
     background-image: url('@/assets/background9.jpg');
     background-size: cover;
     background-position: center;
+    /* opacity: 0; */
+
+    .globe-fade-enter-active {
+        transition: all 1.2s ease-out;
+    }
+
+    .globe-fade-leave-active {
+        transition: all 1.2s cubic-bezier(1, 0.5, 0.8, 1);
+    }
+
+    .globe-fade-enter-from,
+    .globe-fade-leave-to {
+        transform: translateX(20px);
+        opacity: 0;
+    }
 }
 
 
 .card {
     position: absolute;
-    right: 50px;
-    top: 190px;
-    margin: 0 auto;
-    max-width: 500px;
-    max-height: 500px;
+    /**这是窄屏的 */
+    left: 5%;
+    top: 5%;
+    width: 90%;
+    /**这是宽屏的 */
+    left: 40%;
+    top: 15%;
+    width: 30%;
     padding: 0;
-    /* box-shadow: inset 0 5px 20px rgba(255, 255, 255, 0.7); */
     box-shadow: 10px 10px 10px #ccc;
     border-radius: 10px;
-    /* border: 10px; */
+}
+
+.card-fade-enter-from,
+.card-fade-leave-to {
+    transform: translateX(20px);
+    opacity: 0;
+}
+
+.card-fade-enter-active {
+    transition: all 1.2s ease-out;
+}
+
+.card-fade-leave-active {
+    transition: all 1.2s cubic-bezier(1, 0.5, 0.8, 1);
 }
 </style>

@@ -11,9 +11,10 @@ import Earth from '@/components/earth/Earth.vue'
 
 <style scoped>
 .map {
+    position: relative;
+    height: calc(100vh - 220px);
     width: 100%;
     height: 100vh;
-    /* background: rgba(156, 173, 188, 0.9); */
-    z-index: -1000;
+    padding-right: 100px;
 }
 </style>
