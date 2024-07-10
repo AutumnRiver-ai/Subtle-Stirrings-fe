@@ -1,6 +1,6 @@
 <script setup>
-import Timeline from '@/components/timeline/Timeline.vue'
-import Earth from '@/components/earth/Earth.vue'
+import Timeline from '@/components/timeline/timeline.vue'
+import Earth from '@/components/earth/earth.vue'
 </script>
 <template>
     <div class="map">

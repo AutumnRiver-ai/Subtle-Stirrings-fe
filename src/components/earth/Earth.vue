@@ -189,9 +189,10 @@ const createMarker = (svg, projection, path, point) => {
     top: 5%;
     width: 90%;
     /**这是宽屏的 */
-    left: 40%;
+    /* left: 40%;
     top: 15%;
-    width: 30%;
+    width: 30%; */
+
     padding: 0;
     box-shadow: 10px 10px 10px #ccc;
     border-radius: 10px;

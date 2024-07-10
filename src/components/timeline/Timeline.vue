@@ -104,7 +104,10 @@ const toolClick = async (type) => {
     } else if (type == 'play') {
         recording.value = true
         await recordVideo();
-        play(0);
+        setTimeout(() => {
+            play(0);
+        }, 1000)
+
     } else if (type == 'stop') {
         await stopRecordVideo();
         recording.value = false
@@ -138,11 +141,6 @@ const play = (flagIndex) => {
     bottom: 0px;
     box-shadow: inset 0 10px 10px 0px rgba(255, 255, 255, 0.6);
     background: linear-gradient(to right top, rgba(100, 200, 199, 1), rgba(50, 147, 230, 1));
-    
-    /* background-image: url('@/assets/background2.jpg');
-    background-position: right;
-    background-repeat: no-repeat;
-    background-size: contain; */
 
     width: 100%;
     height: 220px;
@@ -189,6 +187,23 @@ const play = (flagIndex) => {
         cursor: move;
         position: absolute;
         height: 215px;
+        width: 200%;
+
+        &::after {
+            position: absolute;
+            right: 280px;
+            top: 50%;
+            transform: translate(0, -50%);
+            content: '';
+            height: 100px;
+            width: 100px;
+            background-image: url('@/assets/qrcode.png');
+            background-position: right;
+            background-repeat: no-repeat;
+            background-size: contain;
+            /* border-radius: 45%; */
+            /* border: 4px solid #fff; */
+        }
 
         .rulermarker {
             font-size: 8px;
@@ -198,11 +213,12 @@ const play = (flagIndex) => {
             height: 14px;
             line-height: 12px;
             color: rgba(255, 255, 255, 1);
+            font-weight: bold;
             text-align: center;
             /* left: 50%; */
             width: 70px;
-            /* background: red;
-            border-right: 1px solid black; */
+            /* background: red; */
+            /* border-right: 1px solid black; */
             overflow: hidden;
 
             &::after {
@@ -222,6 +238,7 @@ const play = (flagIndex) => {
             width: 70px;
             height: 14px;
             color: rgba(225, 225, 225, 1);
+            font-weight: 900;
 
             &::after {
                 content: "";
@@ -245,7 +262,7 @@ const play = (flagIndex) => {
                 .marker {
                     position: absolute;
                     border-radius: 5px;
-                    background: linear-gradient(to bottom, rgba(181, 228, 207, 0.95), rgba(181, 228, 207, 0.8));
+                    background: linear-gradient(to bottom, rgba(181, 228, 207, 0.95), rgba(181, 228, 207, 0.85));
                     border-radius: 0px 10px 10px 0px;
                     display: flex;
                     justify-content: space-between;
@@ -272,7 +289,7 @@ const play = (flagIndex) => {
                         padding: 0 4px;
                         text-align: left;
                         width: 100%;
-                        font-size: 12px;
+                        font-size: 14px;
                         font-weight: bold;
                         line-height: 40px;
                     }

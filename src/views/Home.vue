@@ -1,7 +1,7 @@
 <script setup>
-import News from '@/views/News.vue'
-import Timeline from '@/components/timeline/Timeline.vue'
-import Earth from '@/components/earth/Earth.vue'
+import News from '@/views/news.vue'
+import Timeline from '@/components/timeline/timeline.vue'
+import Earth from '@/components/earth/earth.vue'
 import { useRoute, useRouter } from 'vue-router';
 const router = useRouter()
 
