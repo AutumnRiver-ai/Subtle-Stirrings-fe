@@ -64,7 +64,6 @@ const handleConfirm = (tabkey) => {
       break;
   }
   message.loading('该请求时间较长，多维表格正在分批刷新', 0); // 显示加载提示
-  console.log(url)
   axios.post(url, data)
     .then(response => {
       console.log(response.data); // 处理响应数据
