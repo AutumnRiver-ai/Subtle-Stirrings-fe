@@ -84,7 +84,7 @@ const handleConfirm = (tabkey) => {
   <div class="iframe-container">
     <a-tabs class='chatbox' defaultActiveKey="1" @change="switchTab">
       <!--gen tag-->
-      <a-tab-pane key="tag" tab="生成标签1" class="generate_box">
+      <a-tab-pane key="tag" tab="生成标签" class="generate_box">
         <a-input v-model:value="industry" placeholder="生效类别" class="box-item" />
         <a-input v-model:value="tag" placeholder="输入tag（任意）" class="box-item" />
         <a-input v-model:value="prompt" placeholder="输入prompt" class="box-item" />
