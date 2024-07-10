@@ -1,7 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import axios from 'axios';
-import { message } from 'ant-design-vue';
+import { message, Select } from 'ant-design-vue';
 import { useRoute, useRouter } from 'vue-router';
 const router = useRouter()
 
@@ -15,11 +15,33 @@ const iframeUrl = 'https://gvy72b8f8g2.feishu.cn/base/LbX5bgfvbagjMTs4rc2cB3tpnr
 
 
 const prompt = ref('')
+const modelName = ref('qwen-long')
 const tag = ref('')
 const industry = ref('AIGC')
 const videoName = ref('')
 const TABLE_NAME = 'news'
 const TABLE_ID_NEWS = 'table_id_news'
+
+
+const modelOptions = ref([
+  {
+    value: 'qwen-long',
+    label: 'qwen-long'
+  },
+  {
+    value: 'qwen-turbo',
+    label: 'qwen-turbo'
+  },
+  {
+    value: 'moonshot-v1-32k',
+    label: 'moonshot-v1-32k'
+  },
+
+  {
+    value: 'gpt4-0125-Preview',
+    label: 'gpt4-0125-Preview'
+  },
+]);
 
 const switchTab = (activeKey) => {
   switch (activeKey) {
@@ -35,6 +57,10 @@ const switchTab = (activeKey) => {
       break;
 
   }
+}
+
+const selectModel = () => {
+  console.log(modelName.value)
 }
 
 const handleConfirm = (tabkey) => {
@@ -63,6 +89,7 @@ const handleConfirm = (tabkey) => {
       url = '/conversation'
       break;
   }
+  data.append('model_name', modelName.value)
   message.loading('该请求时间较长，多维表格正在分批刷新', 0); // 显示加载提示
   axios.post(url, data)
     .then(response => {
@@ -81,7 +108,15 @@ const handleConfirm = (tabkey) => {
 
 <template>
   <div class="iframe-container">
-    <a-tabs class='chatbox' defaultActiveKey="1" @change="switchTab">
+    <a-tabs class='chatbox' defaultActiveKey="3" @change="switchTab">
+      <!--choose model-->
+      <a-tab-pane key="model_select" tab="模型选择" class="generate_box">
+        <a-space>
+          <a-select ref="select" v-model:value="modelName" style="width: 120px" :options="modelOptions"
+            @change="selectModel">
+          </a-select>
+        </a-space>
+      </a-tab-pane>
       <!--gen tag-->
       <a-tab-pane key="tag" tab="生成标签" class="generate_box">
         <a-input v-model:value="industry" placeholder="生效类别" class="box-item" />
@@ -103,7 +138,7 @@ const handleConfirm = (tabkey) => {
       <a-tab-pane key="timemap" tab="news earth" class="generate_box">
       </a-tab-pane>
     </a-tabs>
-    <!-- <iframe :src="iframeUrl" width="90%" height="780vh" frameborder="1px" allowfullscreen></iframe> -->
+    <iframe :src="iframeUrl" width="90%" height="780vh" frameborder="1px" allowfullscreen></iframe>
   </div>
 </template>
 
