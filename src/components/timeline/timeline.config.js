@@ -8,7 +8,7 @@ const timelineConfig = {
 		"flagWidth": 120,
 		"init": false,
 		"rulerNum": 5,
-		"baseLineOffset": 0.5,
+		"baseLineOffset": 0.15,
 		"rulerMarkerWidth": 70,
 		"rulerMarkers": [
 			{

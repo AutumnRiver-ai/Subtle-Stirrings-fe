@@ -3,9 +3,7 @@
 
 # http-server -p 8019 
 
-cd /home/lighthouse/Subtle-Stirrings-fe
-sudo mv  ./dist /usr/share/nginx
-cd /usr/share/nginx
-sudo rm -rf html
-sudo mv dist html
+git pull
+sudo rm -rf /usr/share/nginx/html
+sudo cp -r  /home/lighthouse/Subtle-Stirrings-fe/dist /usr/share/nginx/html
 sudo systemctl restart nginx

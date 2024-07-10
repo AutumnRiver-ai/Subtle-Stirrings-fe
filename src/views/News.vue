@@ -22,10 +22,18 @@ const TABLE_NAME = 'news'
 const TABLE_ID_NEWS = 'table_id_news'
 
 const switchTab = (activeKey) => {
-  if (activeKey == 'timemap') {
-    const res = router.replace({
-      name: 'timemap'
-    });
+  switch (activeKey) {
+    case 'timemap':
+      const res = router.replace({
+        name: 'timemap'
+      });
+      break;
+    case 'keypoints':
+      if (!prompt.value.trim()) {
+        prompt.value = `根据给定的新闻，逐一罗列出新闻的要点，不要有所遗漏，返回格式如下\n1. xxx\n2. xxx`
+      }
+      break;
+
   }
 }
 
@@ -33,6 +41,7 @@ const handleConfirm = (tabkey) => {
   // 处理确认逻辑，例如：
   let url = ''
   const data = new FormData();
+  console.log(tabkey)
   switch (tabkey) {
     case 'tag':
       data.append('table_id', TABLE_ID_NEWS)
@@ -42,12 +51,20 @@ const handleConfirm = (tabkey) => {
       data.append('industry', industry.value)
       url = '/tablechat'
       break;
+    case 'keypoints':
+      data.append('table_id', TABLE_ID_NEWS)
+      data.append('table_name', TABLE_NAME)
+      data.append('prompt', prompt.value)
+      data.append('tag', tag.value)
+      url = '/keypoints'
+      break;
     case 'conversation':
       data.append('video_name', videoName.value)
       url = '/conversation'
       break;
   }
   message.loading('该请求时间较长，多维表格正在分批刷新', 0); // 显示加载提示
+  console.log(url)
   axios.post(url, data)
     .then(response => {
       console.log(response.data); // 处理响应数据
@@ -67,12 +84,17 @@ const handleConfirm = (tabkey) => {
   <div class="iframe-container">
     <a-tabs class='chatbox' defaultActiveKey="1" @change="switchTab">
       <!--gen tag-->
-      <a-tab-pane key="tag" tab="生成标签" class="generate_box">
+      <a-tab-pane key="tag" tab="生成标签1" class="generate_box">
         <a-input v-model:value="industry" placeholder="生效类别" class="box-item" />
         <a-input v-model:value="tag" placeholder="输入tag（任意）" class="box-item" />
         <a-input v-model:value="prompt" placeholder="输入prompt" class="box-item" />
-
         <a-button type="primary" @click="handleConfirm('tag')">生成标签</a-button>
+      </a-tab-pane>
+      <!--gen keypoints-->
+      <a-tab-pane key="keypoints" tab="生成要点" class="generate_box">
+        <a-input v-model:value="tag" placeholder="输入tag（任意）" class="box-item" />
+        <a-input v-model:value="prompt" placeholder="输入prompt" class="box-item" />
+        <a-button type="primary" @click="handleConfirm('keypoints')">生成keypoints</a-button>
       </a-tab-pane>
       <!--gen conversation-->
       <a-tab-pane key="conversation" tab="生成对话" class="generate_box">
@@ -82,7 +104,7 @@ const handleConfirm = (tabkey) => {
       <a-tab-pane key="timemap" tab="news earth" class="generate_box">
       </a-tab-pane>
     </a-tabs>
-    <iframe :src="iframeUrl" width="90%" height="780vh" frameborder="1px" allowfullscreen></iframe>
+    <!-- <iframe :src="iframeUrl" width="90%" height="780vh" frameborder="1px" allowfullscreen></iframe> -->
   </div>
 </template>
 
