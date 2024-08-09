@@ -36,11 +36,14 @@ const modelOptions = ref([
     value: 'moonshot-v1-32k',
     label: 'moonshot-v1-32k'
   },
-
   {
     value: 'gpt4-0125-Preview',
     label: 'gpt4-0125-Preview'
   },
+  {
+    value: 'claude-3-5-sonnet-20240620',
+    label: 'claude-3-5-sonnet-20240620'
+  }
 ]);
 
 const switchTab = (activeKey) => {

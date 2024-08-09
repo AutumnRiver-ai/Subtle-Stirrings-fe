@@ -16,17 +16,17 @@ const recordVideo = async () => {
             displaySurface: 'browser',
             video: {
                 cursor: 'always',
-                frameRate: { ideal: 120 },
+                frameRate: { ideal: 12 },
             },
-            videoBitsPerSecond: 160000000,
-            audio: true,
+            // videoBitsPerSecond: 160000000,
+            audio: false,
         });
 
 
         // 创建媒体录制器
         mediaRecorder = new MediaRecorder(stream, {
             mimeType: 'video/webm;codecs=vp9',
-            videoBitsPerSecond: 64000000,
+            videoBitsPerSecond: 1600000,
             timeslice: 100
         });
 

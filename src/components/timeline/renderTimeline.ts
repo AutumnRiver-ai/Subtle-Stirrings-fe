@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import timelineConfig from '@/components/timeline/timeline.config.js';
+import timelineConfig from '@/components/timeline/timeline.config_AI泡沫.js';
 
 const ONEDAYMILLSECONDS = 24 * 60 * 60 * 1000
 export class renderTimeline {
