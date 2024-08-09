@@ -5,14 +5,14 @@
         </transition>
     </div>
     <transition name="card-fade" class="card">
-        <a-card hoverable style="max-width: 100%; max-height: 100%; z-index: -1;" v-show="cardShow">
+        <a-card hoverable style="max-width: 100%; max-height: 80%; z-index: -1;" v-show="cardShow">
             <template #cover>
                 <img alt="example" :src="cardInfo.cardImg" />
             </template>
             <a-card-meta :title="cardInfo.cardContent">
-                <template #description>
+                <!-- <template #description>
                     {{ cardInfo.cardContent }}
-                </template>
+                </template> -->
             </a-card-meta>
         </a-card>
     </transition>
@@ -33,8 +33,8 @@ interface CardInfo {
 }
 
 const cardInfo: CardInfo = reactive({
-    cardContent: "纽约州法院取消特朗普前私人律师朱利安尼的律师资格",
-    cardImg: 'https://mediabluk.cnr.cn/record/img/cnr/CNRCDP/2023/0609/a9597944f437430fbee597cab4c9bf7e10.jpg'
+    cardContent: "",
+    cardImg: ''
 })
 let cardShow = ref(false)
 // const LANDCOLOR = 'lightblue'
@@ -116,10 +116,12 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
         .on("end", () => {
             createMarker(svg, projection, path, pointEnd);
             setTimeout(() => {
-                cardShow.value = true
-                if (state.content) {
-                    cardInfo.cardImg = state.content.img;
-                    cardInfo.cardContent = state.content.content;
+                if (animate) {
+                    cardShow.value = true
+                    if (state.content) {
+                        cardInfo.cardImg = state.content.img;
+                        cardInfo.cardContent = state.content.content;
+                    }
                 }
             }, 1500)
         });
@@ -186,7 +188,7 @@ const createMarker = (svg, projection, path, point) => {
     position: absolute;
     /**这是窄屏的 */
     left: 5%;
-    top: 5%;
+    top: 10%;
     width: 90%;
     /**这是宽屏的 */
     /* left: 40%;

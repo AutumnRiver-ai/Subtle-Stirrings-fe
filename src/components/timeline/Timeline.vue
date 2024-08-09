@@ -53,17 +53,11 @@ const flags = timelineData["flags"];
 const timeline = timelineData["timeline"];
 const refreshFlag = ref(true)
 const store = useStore();
-let recording = ref(false);
 const vm = new renderTimeline()
-
+let recording = ref(false);
 
 onMounted(() => {
     renderFlags();
-    // setTimeout(()=>{
-    //     clickFlag(0);
-    // }, 50)
-
-    // play()
 })
 
 const renderFlags = () => {
@@ -106,7 +100,7 @@ const toolClick = async (type) => {
         await recordVideo();
         setTimeout(() => {
             play(0);
-        }, 1000)
+        }, 2000)
 
     } else if (type == 'stop') {
         await stopRecordVideo();
@@ -115,16 +109,29 @@ const toolClick = async (type) => {
     renderFlags();
 };
 
-const play = (flagIndex) => {
-    // if (index == 0) {
-    //     renderFlags();
-    // }
-    let duration = 2000 + ANIMATEDURATION
+const orderFlags = () => {
+    let playOrder = []
+    flags.forEach((element, index) => {
+        playOrder.push({
+            order: element['order'],
+            index: index
+        })
+    });
+    playOrder.sort((a, b) => a.order - b.order)
+    return playOrder
+}
+
+const play = (index) => {
+    const playOrder = orderFlags()
+    const flagIndex = playOrder[index]['index']
+    let duration = flags[flagIndex]['duration'] * 1000 + ANIMATEDURATION
+    // let duration = 3000
+    // let duration = 1 * 1000 + ANIMATEDURATION
     clickFlag(flagIndex);
     setTimeout(() => {
-        flagIndex += 1
-        if (flagIndex != flags.length) {
-            play(flagIndex)
+        index += 1
+        if (index != flags.length) {
+            play(index)
         } else {
             toolClick('stop')
         }
