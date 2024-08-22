@@ -63,6 +63,7 @@ onMounted(() => {
 const renderFlags = () => {
     vm.render(timelineData);
     refreshFlag.value = !refreshFlag.value
+    clickFlag(0)
 }
 const clickFlag = (index) => {
     goToFlag(index);

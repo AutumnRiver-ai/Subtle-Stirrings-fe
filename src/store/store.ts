@@ -5,7 +5,8 @@ const store = createStore({
         return {
             preLocation: [116, 40],
             location: [116, 40],
-            content: ''
+            content: '',
+            showCard: true
             // message: ''
         };
     },
@@ -15,6 +16,12 @@ const store = createStore({
             state.content = content;
             state.preLocation = state.location
             state.location = location;
+        }, 
+        showCard(state, data) {
+            state.showCard = true
+        },
+        hideCard(state) {
+            state.showCard = false;
         }
     }
 });

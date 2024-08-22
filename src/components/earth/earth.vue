@@ -4,18 +4,15 @@
             <div id="globe" v-show="!cardShow"></div>
         </transition>
     </div>
-    <transition name="card-fade" class="card">
+    <!-- <transition name="card-fade" class="card">
         <a-card hoverable style="max-width: 100%; max-height: 80%; z-index: -1;" v-show="cardShow">
             <template #cover>
                 <img alt="example" :src="cardInfo.cardImg" />
             </template>
             <a-card-meta :title="cardInfo.cardContent">
-                <!-- <template #description>
-                    {{ cardInfo.cardContent }}
-                </template> -->
             </a-card-meta>
         </a-card>
-    </transition>
+    </transition> -->
 </template>
 
 <script setup lang='ts'>
@@ -49,6 +46,7 @@ const SIZE = styleConfig['earth']['globe-size']
 onMounted(() => {
     // return
     // 地图投影
+    store.commit('hideCard')
     const projection = d3.geoOrthographic()
         .scale(SIZE / 2 - 0.5)
         .translate([SIZE / 2, SIZE / 2])
@@ -80,6 +78,8 @@ onMounted(() => {
                 location: [116, 39],
                 preLocation: [116, 39]
             }, false);
+            // debugger
+            // store.commit('hideCard')
 
             store.subscribe((mutation, state) => {
                 if (mutation.type === 'updateContent') {
@@ -89,6 +89,7 @@ onMounted(() => {
         })
 });
 const centerPosition = (svg, projection, path, state, animate = true) => {
+    // debugger
     const longitude = state.location[0];
     const latitude = state.location[1];
     const preLongitude = state.preLocation[0]
@@ -98,7 +99,9 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
     const pointStart = [-preLongitude, 23 - preLatitude]
     const pointEnd = [-longitude, 23 - latitude]
 
-    cardShow.value = false
+    // cardShow.value = false
+    store.commit('hideCard')
+    // debugger
     svg.select('foreignObject').remove();
     let duration = 2500;
     if (!animate) {
@@ -114,15 +117,11 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
             };
         })
         .on("end", () => {
+            // debugger
             createMarker(svg, projection, path, pointEnd);
+            // 触发store的showCard显示卡片
             setTimeout(() => {
-                if (animate) {
-                    cardShow.value = true
-                    if (state.content) {
-                        cardInfo.cardImg = state.content.img;
-                        cardInfo.cardContent = state.content.content;
-                    }
-                }
+                store.commit('showCard')
             }, 1500)
         });
 
