@@ -1,7 +1,44 @@
-import { Observable } from 'rxjs';
-import timelineConfig from '@/components/timeline/timeline.config_AI泡沫.js';
 
 const ONEDAYMILLSECONDS = 24 * 60 * 60 * 1000
+export interface TimelineData {
+    timeline: {
+        containerId: string;
+        containerWidth: number;
+        containerHeight: number;
+        activeFlag: number;
+        offset: number;
+        flagWidth: number;
+        init: boolean;
+        baseLineOffset: number;
+        flagOffsetWidth: number;
+        ruler?: number;
+        rulerNum: number;
+        rulerMarkerWidth: number;
+        rulerMarkers: {
+            content: null | String;
+            timeType: null | String;
+            time: null | string;
+            position: null | number;
+        }[];
+        control: {
+            startDelay: number,
+            record: boolean,
+            duration: number,
+        },
+    };
+    flags: {
+        time: string;
+        duration: number;
+        location: number[];
+        locationName: null | string;
+        title: string;
+        subtitle: string;
+        content: string;
+        imgs: string[];
+        row: number | "middle" | null;
+        order: number;
+    }[];
+}
 export class renderTimeline {
     private entity;
     private ruler;
@@ -11,7 +48,8 @@ export class renderTimeline {
         "bottom": null
     }
     private dateMap = {}
-    public render(timelineData) {
+
+    public render(timelineData: TimelineData) {
         let timeline = timelineData["timeline"];
         this.time2Date(timelineData);
         const container = document.getElementById(`${timeline['containerId']}`)
@@ -29,11 +67,11 @@ export class renderTimeline {
         this.renderFlags(timelineData);
     }
 
-    public renderFlags(timelineData) {
+    public renderFlags(timelineData: TimelineData) {
         let timeline = timelineData["timeline"];
         let flags = timelineData["flags"];
         if (!timeline["ruler"]) {
-            this.ruler = this.calRuler(flags, timeline["containerWidth"] * (1 - timeline['baseLineOffset']) - timeline["flagWidth"] * 0.5);
+            this.ruler = this.calRuler(flags, timeline["containerWidth"] * (1 - timeline['baseLineOffset']) - timeline["flagWidth"] * timeline["flagOffsetWidth"]);
             timeline["ruler"] = this.ruler;
         } else {
             this.ruler = timeline["ruler"];
@@ -95,12 +133,9 @@ export class renderTimeline {
             rulerMarkers[i]["time"] = new Date();
             rulerMarkers[i]["time"].setTime(baseDay.getTime() + i * daysInterval * ONEDAYMILLSECONDS);
             if (Math.abs(this.calInterval(rulerMarkers[i]["time"], flags[timeline["activeFlag"]]["time"])) <= radius) {
-                console.log('hereherehereherehere')
                 rulerMarkers[i]["time"].setTime(flags[timeline["activeFlag"]]["time"].getTime());
-                console.log(rulerMarkers[i]["time"].getTime(), flags[timeline["activeFlag"]]["time"].getTime())
-                console.log(this.time2Position(rulerMarkers[i]["time"], flags, timeline), flags[timeline["activeFlag"]]['position'])
             }
-            rulerMarkers[i]["position"] = this.time2Position(rulerMarkers[i]["time"], flags, timeline) - timelineConfig['timeline']['rulerMarkerWidth'] * 0.5;//rulerMarkers[i]["time"] * timeline["ruler"];
+            rulerMarkers[i]["position"] = this.time2Position(rulerMarkers[i]["time"], flags, timeline) - timeline['rulerMarkerWidth'] * 0.5;//rulerMarkers[i]["time"] * timeline["ruler"];
             const { content, timeType } = this.time2Display(rulerMarkers[i]["time"]);
             rulerMarkers[i]["content"] = content;
             rulerMarkers[i]["timeType"] = timeType
@@ -137,13 +172,13 @@ export class renderTimeline {
         return baseDay;
     }
 
-
     private time2Position(time, flags, timeline) {
         const baseTime = flags[0]["time"];
         const days = (time.getTime() - baseTime.getTime()) / ONEDAYMILLSECONDS;
         const position = timeline["containerWidth"] * (timeline['baseLineOffset']) + days * this.ruler;
         return position;
     }
+
     private setRows(flags, timeline) {
 
         var baseTime = flags[0]["time"];
@@ -163,18 +198,20 @@ export class renderTimeline {
             flag["layer"] = this.flagLayer[flag["row"]];
         });
     }
+
     private restRow(row1, row2) {
         var rows = ["middle", "top", "bottom"];
         let index = 3 - rows.indexOf(row1) - rows.indexOf(row2);
         return rows[index];
     }
+
     private nextRow(row) {
         var rows = ["middle", "top", "bottom"];
         let index = (rows.indexOf(row) + 1) % 3;
         return rows[index];
     }
 
-    private positionFlags(timelineData) {
+    public positionFlags(timelineData) {
         let timeline = timelineData["timeline"];
         let flags = timelineData["flags"];
         let offset = flags[0]["position"] - flags[timeline["activeFlag"]]["position"];
@@ -189,7 +226,6 @@ export class renderTimeline {
         });
         return flags;
     }
-
 
     /*interval单位是天*/
     private calInterval(date1, date2) {

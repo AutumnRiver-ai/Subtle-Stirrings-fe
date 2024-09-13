@@ -1,34 +1,36 @@
 <template>
     <div id="timeline_container">
-        <div id="toolbox">
-            <HomeTwoTone :style="{ fontSize: '20px' }" @click="toolClick('home')" />
-            <PlayCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('play')" v-if="!recording" />
-            <PauseCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('stop')" v-if="recording" />
-            <PlusCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('magnify')" />
-            <MinusCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('reduce')" />
-        </div>
-        <div class="baseline_v" :style="{ left: `${timeline['baseLineOffset'] * 100}%` }"></div>
-        <div class="baseline_h"></div>
-        <div class="dragable_container" :style="{ left: timeline.offset + 'px' }"
-            v-TimelineDrag="{ timeline: timeline, refreshFlag: refreshFlag }">
-            <div class="flagwraper">
-                <div v-for="(flag, index) in flags" :key="index"
-                    v-TimelineFlag="{ flag: flag, timeline: timeline, refreshFlag: refreshFlag, index: index }"
-                    class="timeflag" @click="clickFlag(index)">
-                    <div class="marker" :class="{ 'marker_active': index == timeline.activeFlag }">
-                        <img class="icon" :src=iconURL>
-                        <div class='content'>{{ flag['title'] }}</div>
+        <div class="container_background">
+            <div id="toolbox">
+                <HomeTwoTone :style="{ fontSize: '20px' }" @click="toolClick('home')" />
+                <PlayCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('play')" v-if="!playing" />
+                <PauseCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('stop')" v-if="playing" />
+                <PlusCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('magnify')" />
+                <MinusCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('reduce')" />
+            </div>
+            <div class="baseline_v" :style="{ left: `${timeline['baseLineOffset'] * 100}%` }"></div>
+            <div class="baseline_h"></div>
+            <div class="dragable_container" :style="{ left: timeline.offset + 'px' }"
+                v-TimelineDrag="{ timeline: timeline, refreshFlag: refreshFlag }">
+                <div class="flagwraper">
+                    <div v-for="(flag, index) in flags" :key="index"
+                        v-TimelineFlag="{ flag: flag, timeline: timeline, refreshFlag: refreshFlag, index: index }"
+                        class="timeflag" @click="clickFlag(index)">
+                        <!-- <Marker :title="flag['title']"  :isActive="index == timeline.activeFlag"/> -->
+                        <MarkerShadow :title="flag['title']" :subtitle="flag['subtitle']"
+                            :isActive="index == timeline.activeFlag" />
                     </div>
-                    <div class="pole">
-                        <div class="poleheader"></div>
-                        <div class="polefooter"></div>
+
+                    <div v-for="(rulermarker, i) in timeline.rulerMarkers" :key="i" class="rulermarker"
+                        :style="{ left: rulermarker.position + 'px' }"
+                        :class="{ 'year_type': rulermarker.timeType == 'year' }">
+                        {{ rulermarker.content }}
                     </div>
                 </div>
-
-                <div v-for="(rulermarker, i) in timeline.rulerMarkers" :key="i" class="rulermarker"
-                    :style="{ left: rulermarker.position + 'px' }"
-                    :class="{ 'year_type': rulermarker.timeType == 'year' }">
-                    {{ rulermarker.content }}
+                <div class="suffix">
+                    <div class="asklike">
+                        <img src="@/assets/icon.jpg">
+                    </div>
                 </div>
             </div>
         </div>
@@ -37,31 +39,32 @@
 
 <script setup lang='ts'>
 import { ref, reactive, onMounted, onBeforeMount } from 'vue';
-import axios from 'axios';
-import timelineConfig from '@/components/timeline/timeline.config.js';
-import iconURL from '@/assets/icon.jpg';
-import { renderTimeline } from '@/components/timeline/renderTimeline.js';
+import timelineConfig from '@/api/timeline.config.ts';
+import { renderTimeline, TimelineData } from '@/components/timeline/renderTimeline.ts';
 import { PlusCircleTwoTone, MinusCircleTwoTone, HomeTwoTone, PlayCircleTwoTone, PauseCircleTwoTone } from '@ant-design/icons-vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
-import { recordVideo, stopRecordVideo } from '@/utils/record.js';
+import { recordVideo, stopRecordVideo } from '@/utils/record.ts';
+// import Marker from './markers/markerSimple.vue';
+import MarkerShadow from './markers/markerShadow.vue';
 const ANIMATEDURATION = 2700 + 2000 + 550
 const router = useRouter()
 
-const timelineData = timelineConfig;
+const timelineData: TimelineData = timelineConfig;
 const flags = timelineData["flags"];
 const timeline = timelineData["timeline"];
 const refreshFlag = ref(true)
 const store = useStore();
-const vm = new renderTimeline()
-let recording = ref(false);
+const rt = new renderTimeline()
+let playing = ref(false);
 
 onMounted(() => {
-    renderFlags();
+    renderFlags()
+    toolClick('play')
 })
 
 const renderFlags = () => {
-    vm.render(timelineData);
+    rt.render(timelineData);
     refreshFlag.value = !refreshFlag.value
 }
 const clickFlag = (index) => {
@@ -71,15 +74,17 @@ const clickFlag = (index) => {
     store.commit('updateContent', {
         content: {
             'content': flag['content'],
-            'img': flag['img']
+            'imgs': flag['imgs'],
+            'title': flag['title']
         },
-        location: flag['location']
+        location: flag['location'],
+        locationName: flag['locationName']
     });
 };
 
 const goToFlag = (index) => {
     timeline.activeFlag = index;
-    vm.positionFlags(timelineData);
+    rt.positionFlags(timelineData);
     timeline.init = true;
 };
 
@@ -96,15 +101,21 @@ const toolClick = async (type) => {
             name: 'news'
         })
     } else if (type == 'play') {
-        recording.value = true
-        await recordVideo();
+        playing.value = true
+        if (timeline.control.record) {
+            await recordVideo();
+        }
+
         setTimeout(() => {
             play(0);
-        }, 2000)
+        }, timeline.control.startDelay)
 
     } else if (type == 'stop') {
-        await stopRecordVideo();
-        recording.value = false
+        if (timeline.control.record) {
+            await stopRecordVideo();
+        }
+
+        playing.value = false
     }
     renderFlags();
 };
@@ -124,13 +135,22 @@ const orderFlags = () => {
 const play = (index) => {
     const playOrder = orderFlags()
     const flagIndex = playOrder[index]['index']
-    let duration = flags[flagIndex]['duration'] * 1000 + ANIMATEDURATION
-    // let duration = 3000
-    // let duration = 1 * 1000 + ANIMATEDURATION
+    let duration;
+
+    if (timeline.control.record) {
+        duration = flags[flagIndex]['duration'] * 1000 + ANIMATEDURATION
+    } else {
+        duration = timeline.control.duration + ANIMATEDURATION
+    }
     clickFlag(flagIndex);
     setTimeout(() => {
-        index += 1
-        if (index != flags.length) {
+        if (timeline.control.record) {
+            index += 1
+        } else {
+            index = (index + 1) % flags.length
+        }
+
+        if (index != flags.length && playing.value) {
             play(index)
         } else {
             toolClick('stop')
@@ -147,195 +167,145 @@ const play = (index) => {
     position: absolute;
     bottom: 0px;
     box-shadow: inset 0 10px 10px 0px rgba(255, 255, 255, 0.6);
-    background: linear-gradient(to right top, rgba(100, 200, 199, 1), rgba(50, 147, 230, 1));
+    background-size: 25px 25px;
+    background-image:
+        linear-gradient(to right, #fff 1px, transparent 2px),
+        linear-gradient(to bottom, #fff 1px, transparent 2px);
 
     width: 100%;
     height: 220px;
     overflow: hidden;
 
-    #toolbox {
+    .container_background {
         position: absolute;
-        top: 42%;
-        transform: translate(0%, -50%);
-        /* 使用translate属性水平垂直居中 */
-        font-size: 12px;
-        height: 76%;
-        width: 30px;
-        background: rgba(253, 254, 240, 0.8);
-        z-index: 100;
-        display: flex;
-        flex-direction: column;
-        /* 设置子元素纵向排列 */
-        justify-content: space-between;
-        padding: 20px 0;
-        box-shadow: 6px 6px 2px #ccc;
-    }
-
-    .baseline_v {
-        position: absolute;
-        height: 190px;
-        width: 1.5px;
-        left: 10%;
-        background: rgb(0, 0, 0, 0.8);
-        z-index: 100;
-    }
-
-    .baseline_h {
-        position: absolute;
-        bottom: 28px;
-        height: 1px;
-        width: 100%;
+        top: 0;
         left: 0;
-        background: rgba(225, 225, 225, 0.3);
-        z-index: 100;
-    }
+        width: 100%;
+        height: 100%;
+        /* background: red; */
+        background: linear-gradient(to right top, rgba(158, 35, 234, 0.6), rgba(50, 147, 230, 0.5), rgba(51, 172, 170, 0.85));
 
-    .dragable_container {
-        cursor: move;
-        position: absolute;
-        height: 215px;
-        width: 200%;
-
-        &::after {
+        #toolbox {
             position: absolute;
-            right: 280px;
-            top: 50%;
-            transform: translate(0, -50%);
-            content: '';
-            height: 100px;
-            width: 100px;
-            background-image: url('@/assets/qrcode.png');
-            background-position: right;
-            background-repeat: no-repeat;
-            background-size: contain;
-            /* border-radius: 45%; */
-            /* border: 4px solid #fff; */
-        }
-
-        .rulermarker {
-            font-size: 8px;
-            position: absolute;
-            bottom: 0px;
+            top: 42%;
+            transform: translate(0%, -50%);
+            /* 使用translate属性水平垂直居中 */
+            font-size: 12px;
+            height: 76%;
+            width: 30px;
+            background: rgba(253, 254, 240, 0.8);
             z-index: 100;
-            height: 14px;
-            line-height: 12px;
-            color: rgba(255, 255, 255, 1);
-            font-weight: bold;
-            text-align: center;
-            /* left: 50%; */
-            width: 70px;
-            /* background: red; */
-            /* border-right: 1px solid black; */
-            overflow: hidden;
-
-            &::after {
-                content: "";
-                position: absolute;
-                background: rgba(225, 225, 225, 1);
-                width: 1px;
-                height: 6px;
-                bottom: 18px;
-                /* left: 50%; */
-
-            }
+            display: flex;
+            flex-direction: column;
+            /* 设置子元素纵向排列 */
+            justify-content: space-between;
+            padding: 20px 0;
+            box-shadow: 6px 6px 2px #ccc;
         }
 
-        .year_type {
-            font-size: 10px;
-            width: 70px;
-            height: 14px;
-            color: rgba(225, 225, 225, 1);
-            font-weight: 900;
-
-            &::after {
-                content: "";
-                position: absolute;
-                background: rgba(225, 225, 225, 1);
-                width: 2px;
-                height: 8px;
-                bottom: 16px;
-                left: 50%;
-
-            }
+        .baseline_v {
+            position: absolute;
+            height: 196px;
+            width: 1.5px;
+            left: 10%;
+            background: rgb(0, 0, 0, 0.8);
+            z-index: 100;
         }
 
-        .flagwraper {
-            height: 200px;
+        .baseline_h {
+            position: absolute;
+            bottom: 22px;
+            height: 1px;
+            width: 100%;
+            left: 0;
+            background: rgba(225, 225, 225, 1);
+            /* background: linear-gradient(to right top, rgba(51, 172, 170, 0.8), rgba(50, 147, 230, 0.2), rgba(158, 35, 234, 0.5)); */
 
-            .timeflag {
-                cursor: pointer;
-                position: absolute;
+            z-index: 100;
+        }
 
-                .marker {
+        .dragable_container {
+            cursor: move;
+            position: absolute;
+            height: 215px;
+            width: 130%;
+
+            .suffix {
+                .asklike {
                     position: absolute;
-                    border-radius: 5px;
-                    background: linear-gradient(to bottom, rgba(181, 228, 207, 0.95), rgba(181, 228, 207, 0.85));
-                    border-radius: 0px 10px 10px 0px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
+                    right: 0px;
+                    top: 50%;
+                    transform: translate(-130%, -50%);
+                    content: '';
+                    height: 160px;
+                    width: 160px;
+                    border-radius: 50%;
 
-                    &::after {
-                        content: "";
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 99.5%;
-                        height: 100%;
-                        border-radius: 0px 10px 10px 0px;
-                    }
-
-                    .icon {
-                        margin: 4px;
-                        width: 35px;
-                        height: auto;
-                    }
-
-                    .content {
-                        color: black;
-                        padding: 0 4px;
-                        text-align: left;
+                    img {
                         width: 100%;
-                        font-size: 14px;
-                        font-weight: bold;
-                        line-height: 40px;
-                    }
-                }
-
-                .marker_active {
-                    background: rgba(167, 247, 139, 1);
-                    /* z-index: 999; */
-                }
-
-                .pole {
-                    width: 1px;
-                    position: absolute;
-                    height: 190px;
-                    top: 0;
-                    background: rgba(0, 0, 0, 0.1);
-                    z-index: 101;
-
-                    .polefooter {
-                        position: relative;
-                        top: 190px;
-                        left: -1.5px;
-                        width: 4px;
-                        height: 4px;
-                        border-radius: 2px;
-                        background: rgb(0, 0, 0);
-                    }
-
-                    .poleheader {
-                        position: absolute;
-                        top: 0px;
-                        width: 0px;
-                        left: -40px;
-                        height: 6px;
-                        background: rgba(0, 0, 0, 0.6);
+                        height: 100%;
+                        border-radius: 50%;
                     }
                 }
             }
+
+            .rulermarker {
+                font-size: 8px;
+                position: absolute;
+                bottom: 0px;
+                z-index: 100;
+                height: 14px;
+                line-height: 12px;
+                color: rgba(255, 255, 255, 1);
+                font-weight: bold;
+                text-align: center;
+                /* left: 50%; */
+                width: 70px;
+                /* background: red; */
+                /* border-right: 1px solid black; */
+                overflow: hidden;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    background: rgba(225, 225, 225, 1);
+                    width: 1px;
+                    height: 6px;
+                    bottom: 18px;
+                    /* left: 50%; */
+
+                }
+            }
+
+            .year_type {
+                font-size: 10px;
+                width: 70px;
+                height: 14px;
+                color: rgba(225, 225, 225, 1);
+                font-weight: 900;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    background: rgba(225, 225, 225, 1);
+                    width: 2px;
+                    height: 8px;
+                    bottom: 16px;
+                    left: 50%;
+
+                }
+            }
+
+            .flagwraper {
+                height: 200px;
+
+                .timeflag {
+                    cursor: pointer;
+                    position: absolute;
+                }
+            }
         }
+
     }
 }
 
