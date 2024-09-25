@@ -3,8 +3,8 @@
         <div class='container'>
             <img class="icon" src="@/assets/icon.jpg">
             <div class="content">
-                <div class="title">{{ title }}</div>
-                <div class="subtitle" v-if="subtitle">{{ subtitle.slice(0,9) }}</div>
+                <div class="title">{{ title.slice(0, 12) }}</div>
+                <div class="subtitle" v-if="subtitle">{{ subtitle.slice(0, 9) }}</div>
             </div>
             <div class='suffix'></div>
         </div>

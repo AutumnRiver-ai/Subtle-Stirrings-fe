@@ -1,15 +1,13 @@
 import { createStore } from 'vuex';
 
-const store = createStore({
-    state() {
-        return {
-            preLocationName: '',
-            locationName: '',
-            preLocation: [116, 40],
-            location: [116, 40],
-            content: ''
-            // message: ''
-        };
+const content = {
+    namespaced: true,
+    state: {
+        preLocationName: '',
+        locationName: '',
+        preLocation: [116, 40],
+        location: [116, 40],
+        content: ''
     },
     mutations: {
         updateContent(state, data) {
@@ -21,6 +19,27 @@ const store = createStore({
             state.locationName = locationName
         }
     }
-});
+};
 
-export default store;
+const timeline = {
+    namespaced: true,
+    state: {
+        msgType: '',
+        updateData: {}
+
+    },
+    mutations: {
+        updateTimeline(state, data) {
+            const { msgType, updateData } = data;
+            state.msgType = msgType;
+            state.updateData = updateData;
+        }
+    }
+};
+
+export default createStore({
+    modules: {
+        content,
+        timeline
+    },
+});

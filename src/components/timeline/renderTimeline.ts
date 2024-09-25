@@ -33,8 +33,11 @@ export interface TimelineData {
         locationName: null | string;
         title: string;
         subtitle: string;
+        organization: string;
         content: string;
         imgs: string[];
+        website: string;
+        titleUrl: string;
         row: number | "middle" | null;
         order: number;
     }[];

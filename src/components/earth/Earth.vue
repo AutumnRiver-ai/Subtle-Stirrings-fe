@@ -6,23 +6,7 @@
                 <!-- <div id="globe"></div> -->
             </transition>
         </div>
-        <transition name="card-fade" class="card">
-            <!-- <a-card hoverable style="max-width: 80%; max-height: 80%; z-index: -1;"> -->
-            <a-card hoverable v-show="cardShow">
-                <template #cover>
-                    <div class="img-container">
-                        <div v-for="(imgSrc, index) in cardInfo.cardImgs" :key="index" class="img-item">
-                            <img alt="example" :src="imgSrc" />
-                        </div>
-                    </div>
-                </template>
-                <a-card-meta :title="cardInfo.cardTitle">
-                    <template #description>
-                        {{ cardInfo.cardContent }}
-                    </template>
-                </a-card-meta>
-            </a-card>
-        </transition>
+        <card-news :cardShow="cardShow"></card-news>
     </div>
 </template>
 
@@ -31,21 +15,11 @@ import * as d3 from 'd3';
 import { onMounted, computed, render, h, reactive, ref } from 'vue';
 import { useStore } from 'vuex';
 import { EnvironmentTwoTone } from '@ant-design/icons-vue';
-import { Tooltip } from 'ant-design-vue';
+import CardTrip from '@/components/cards/cardTrip.vue';
+import CardNews from '@/components/cards/cardNews.vue';
 import styleConfig from '@/utils/styleConfig.ts';
+import timelineConfig from '@/api/timeline.config.ts';
 const store = useStore();
-
-interface CardInfo {
-    cardTitle: string;
-    cardContent: string;
-    cardImgs: Array<string>;
-}
-
-const cardInfo: CardInfo = reactive({
-    cardTitle: "",
-    cardContent: "",
-    cardImgs: []
-})
 let cardShow = ref(false)
 // const LANDCOLOR = 'lightblue'
 // const COUNTRYCOLOR = 'lightblue'
@@ -77,9 +51,7 @@ onMounted(() => {
         // .attr("transform", `translate(0, ${1/4*SIZE})`)
         .style("background-color", OCEANCOLOR)
         .style('border-radius', '50%');
-
-    // 粗糙地图 https://raw.githubusercontent.com/epistler999/GeoLocation/master/world.json
-    d3.json("https://raw.githubusercontent.com/epistler999/GeoLocation/master/world.json")
+    d3.json('/world.json')
         .then(data => {
             svg.append("g")
                 .selectAll("path")
@@ -97,7 +69,8 @@ onMounted(() => {
             }, false);
 
             store.subscribe((mutation, state) => {
-                if (mutation.type === 'updateContent') {
+                if (mutation.type === 'content/updateContent') {
+                    state = state.content
                     centerPosition(svg, projection, path, state);
                 }
             });
@@ -125,36 +98,61 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
         duration = 10;
     }
     const locate2position = () => {
+        const greatArcPoints = []
         svg.transition()
             .duration(duration) // 设置动画持续时间为 2 秒
             .tween("rotate", () => {
                 const interpolateRotation = d3.interpolate(pointStart, pointEnd);
-                const interpolateScale = d3.interpolate(1, 2);
                 return function (t) {
                     if (arcPath) {
                         arcPath.remove()
                         arcIcon.remove()
                     }
                     projection.rotate(interpolateRotation(t));
-                    const scale = interpolateScale(t); // 获取当前缩放比例
                     // svg.attr("transform", `translate(${SIZE / 2}, ${SIZE / 2}) scale(${scale}) rotate(${interpolateRotation(t)}) translate(${-SIZE / 2}, ${-SIZE / 2})`);
                     // svg.attr("transform", `scale(${1+t})`)
                     svg.selectAll("path").attr("d", path);
 
-                    const end0 = -pointStart[0] * (1 - t) + -pointEnd[0] * t
-                    const end1 = -pointStart[1] * (1 - t) + -pointEnd[1] * t
+                    const end0 = -pointStart[0] * (1 - t) - pointEnd[0] * t
+                    const end1 = -pointStart[1] * (1 - t) - pointEnd[1] * t
+                    if (greatArcPoints.length === 0) {
+                        greatArcPoints.push([[-pointStart[0], -pointStart[1]], [end0, end1]])
+                    } else {
+                        const oldPoint = greatArcPoints[greatArcPoints.length - 1][1]
+                        greatArcPoints.push([oldPoint, [end0, end1]])
+                    }
+
                     const greatArc = {
-                        type: "LineString",
-                        coordinates: [[-pointStart[0], -pointStart[1]], [end0, end1]]
+                        type: "MultiLineString",
+                        coordinates: greatArcPoints
                     };
                     let c_r = 5 * (1 - t) + 158
                     let c_g = 5 * t + 35
                     let c_b = 234
+
+
+
+                    const defs = svg.append("defs");
+                    const linearGradient = defs.append("linearGradient")
+                        .attr("id", "myGradient")
+                        .attr("x1", "0%")
+                        .attr("y1", "0%")
+                        .attr("x2", "100%")
+                        .attr("y2", "100%")
+                    linearGradient.append("stop")
+                        .attr("offset", "0%")
+                        .attr("stop-color", `rgb(255, 255, 0)`)
+                    linearGradient.append("stop")
+                        .attr("offset", "100%")
+                        .attr("stop-color", `rgb(255, 0, 0)`)
+
+
                     arcPath = svg.append("path")
                         .attr("d", path(greatArc))
-                        .attr("stroke", `rgba(${c_r}, ${c_g}, ${c_b}, ${1 - t ** 10 + 0.01})`)
+                        // .attr("stroke", `rgba(${c_r}, ${c_g}, ${c_b}, ${1 - t ** 10 + 0.01})`)
+                        .attr("stroke", "url(#myGradient)")
                         .attr("stroke-width", 2)
-                    const [x, y] = projection([lng_offset + end0, lat_offset + end1]);
+                        .attr("stroke-opacity", 1 - t ** 10 + 0.01)
                     let [offsetX, offsetY] = projection.translate()
                     arcIcon = svg.append('circle')
                         .attr('cx', offsetX)
@@ -175,11 +173,6 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
                 setTimeout(() => {
                     if (animate) {
                         cardShow.value = true
-                        if (state.content) {
-                            cardInfo.cardImgs = state.content.imgs;
-                            cardInfo.cardContent = state.content.content;
-                            cardInfo.cardTitle = state.content.title;
-                        }
                     }
                 }, 1500)
             });
@@ -203,11 +196,11 @@ const createMarker = (svg, projection, path, point, locationName = '') => {
         .attr("height", iconSize)
         .html("<div id='marker'></div>");
     svg.append("foreignObject")
-        .attr("x", x + offsetX - iconSize / 2)
+        .attr("x", x + offsetX - iconSize * 4 / 2)
         .attr("y", y + offsetY)
-        .attr("width", iconSize)
+        .attr("width", iconSize * 4)
         .attr("height", iconSize)
-        .html(`<div id='city' style='font-size:12px; color:rgba(0, 0, 0, 1)'>${locationName}</div>`);
+        .html(`<div id='city' style='display:inline-block; white-space: nowrap; font-size:12px; color:rgba(0, 0, 0, 1);'>${locationName}</div>`);
     svg.selectAll("path").attr("d", path);
     const container = document.getElementById('marker');
     const icon = h(EnvironmentTwoTone, { spin: false, rotate: 0, style: { fontSize: '30px' } });
@@ -257,48 +250,6 @@ const createMarker = (svg, projection, path, point, locationName = '') => {
             transform: translateX(20px);
             opacity: 0;
         }
-    }
-
-    .card {
-        padding: 10px;
-        background: white;
-        box-shadow: 6px 6px 6px #ccc;
-        border-radius: 10px;
-
-        .img-container {
-            display: flex;
-            align-items: center;
-            /**水平剧中 */
-            justify-content: center;
-
-            .img-item {
-                margin-right: 10px;
-                /* 最后一个元素margin-right为0*/
-                &:last-child {
-                    margin-right: 0;
-                }  
-                height: 100%;
-                &>img {
-                    max-height: calc(80vh - 220px);
-                    object-fit: cover;
-                    border-radius: 5px;
-                }
-            }
-        }
-    }
-
-    .card-fade-enter-from,
-    .card-fade-leave-to {
-        transform: translateX(20px);
-        opacity: 0;
-    }
-
-    .card-fade-enter-active {
-        transition: all 0.9s ease-out;
-    }
-
-    .card-fade-leave-active {
-        transition: all 1.0s cubic-bezier(1, 0.5, 0.8, 1);
     }
 }
 </style>

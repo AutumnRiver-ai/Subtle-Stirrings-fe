@@ -2,7 +2,8 @@
     <div id="timeline_container">
         <div class="container_background">
             <div id="toolbox">
-                <HomeTwoTone :style="{ fontSize: '20px' }" @click="toolClick('home')" />
+                <!-- <HomeTwoTone :style="{ fontSize: '20px' }" @click="toolClick('home')" /> -->
+                <GithubOutlined :style="{ fontSize: '20px', color: 'rgb(24, 144, 255)' }" @click="toolClick('home')" />
                 <PlayCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('play')" v-if="!playing" />
                 <PauseCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('stop')" v-if="playing" />
                 <PlusCircleTwoTone :style="{ fontSize: '20px' }" @click="toolClick('magnify')" />
@@ -17,7 +18,7 @@
                         v-TimelineFlag="{ flag: flag, timeline: timeline, refreshFlag: refreshFlag, index: index }"
                         class="timeflag" @click="clickFlag(index)">
                         <!-- <Marker :title="flag['title']"  :isActive="index == timeline.activeFlag"/> -->
-                        <MarkerShadow :title="flag['title']" :subtitle="flag['subtitle']"
+                        <MarkerShadow :title="flag['locationName']" :subtitle="flag['organization']" ,
                             :isActive="index == timeline.activeFlag" />
                     </div>
 
@@ -38,45 +39,48 @@
 </template>
 
 <script setup lang='ts'>
+import { getTimeline } from '@/api/timeline.ts';
 import { ref, reactive, onMounted, onBeforeMount } from 'vue';
-import timelineConfig from '@/api/timeline.config.ts';
+// import timelineConfig from '@/api/timeline.config.ts';
+import timelineConfig from '@/api/timeline.config_tpl.ts';
 import { renderTimeline, TimelineData } from '@/components/timeline/renderTimeline.ts';
-import { PlusCircleTwoTone, MinusCircleTwoTone, HomeTwoTone, PlayCircleTwoTone, PauseCircleTwoTone } from '@ant-design/icons-vue';
+import { PlusCircleTwoTone, MinusCircleTwoTone, HomeTwoTone, PlayCircleTwoTone, PauseCircleTwoTone, GithubOutlined } from '@ant-design/icons-vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import { recordVideo, stopRecordVideo } from '@/utils/record.ts';
 // import Marker from './markers/markerSimple.vue';
-import MarkerShadow from './markers/markerShadow.vue';
+import MarkerShadow from '@/components/timeline/markers/markerShadow.vue';
 const ANIMATEDURATION = 2700 + 2000 + 550
 const router = useRouter()
 
-const timelineData: TimelineData = timelineConfig;
-const flags = timelineData["flags"];
-const timeline = timelineData["timeline"];
+let timelineData: TimelineData = structuredClone(timelineConfig);
+let flags = timelineData["flags"];
+let timeline = timelineData["timeline"];
 const refreshFlag = ref(true)
 const store = useStore();
 const rt = new renderTimeline()
 let playing = ref(false);
 
-onMounted(() => {
-    renderFlags()
-    toolClick('play')
+onMounted(async () => {
+    await getTimelineData('2023-05-16')
+    await updateTimelineData()
+    // toolClick('play')
 })
 
 const renderFlags = () => {
     rt.render(timelineData);
     refreshFlag.value = !refreshFlag.value
+    setTimeout(() => {
+        clickFlag(0)
+    }, 1000);
+
 }
 const clickFlag = (index) => {
     goToFlag(index);
     refreshFlag.value = !refreshFlag.value
     const flag = flags[index]
-    store.commit('updateContent', {
-        content: {
-            'content': flag['content'],
-            'imgs': flag['imgs'],
-            'title': flag['title']
-        },
+    store.commit('content/updateContent', {
+        content: flag,
         location: flag['location'],
         locationName: flag['locationName']
     });
@@ -159,6 +163,60 @@ const play = (index) => {
     }, duration)
 }
 
+async function preloadImages(urlList) {
+    urlList.forEach(async (url) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+            img.src = url;
+        });
+    })
+
+}
+
+async function getTimelineData(date: string) {
+    timelineData = structuredClone(timelineConfig);
+    flags = timelineData["flags"];
+    timeline = timelineData["timeline"];
+    const data = await getTimeline()
+    const tpl = flags.pop()
+    let preloadList = []
+    data.forEach(element => {
+        tpl['time'] = element['date']
+        tpl['title'] = element['title']
+        tpl['subtitle'] = element['subtitle']
+        tpl['content'] = element['summary']
+        tpl['imgs'] = element['imgs']
+        tpl['location'] = element['location']
+        tpl['locationName'] = element['location_str']
+        tpl['organization'] = element['organization']
+        tpl['website'] = element['website']
+        tpl['titleUrl'] = element['title_url']
+        flags.push(JSON.parse(JSON.stringify(tpl)))
+        preloadList = [...preloadList, ...element['imgs']]
+    });
+    refreshFlag.value = !refreshFlag.value
+    await preloadImages(preloadList)
+    renderFlags()
+}
+async function updateTimelineData() {
+    store.subscribe(async (mutation, state) => {
+        state = state.timeline
+        if (mutation.type === 'timeline/updateTimeline') {
+            const msgType = state.msgType
+            const updateData = state.updateData
+            console.log(msgType)
+            switch (msgType) {
+                case 'tech_news':
+                    await getTimelineData(updateData.date)
+                    break;
+                default:
+                    break;
+            }
+        }
+    })
+}
 </script>
 
 <style scoped>
@@ -169,8 +227,8 @@ const play = (index) => {
     box-shadow: inset 0 10px 10px 0px rgba(255, 255, 255, 0.6);
     background-size: 25px 25px;
     background-image:
-        linear-gradient(to right, #fff 1px, transparent 2px),
-        linear-gradient(to bottom, #fff 1px, transparent 2px);
+        linear-gradient(to right, #ddd 1px, transparent 1px),
+        linear-gradient(to bottom, #ddd 1px, transparent 1px);
 
     width: 100%;
     height: 220px;
