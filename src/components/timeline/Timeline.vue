@@ -17,8 +17,7 @@
                     <div v-for="(flag, index) in flags" :key="index"
                         v-TimelineFlag="{ flag: flag, timeline: timeline, refreshFlag: refreshFlag, index: index }"
                         class="timeflag" @click="clickFlag(index)">
-                        <!-- <Marker :title="flag['title']"  :isActive="index == timeline.activeFlag"/> -->
-                        <MarkerShadow :title="flag['locationName']" :subtitle="flag['organization']" ,
+                        <MarkerShadow :title="flag['locationName']" :subtitle="flag['organization']"
                             :isActive="index == timeline.activeFlag" />
                     </div>
 

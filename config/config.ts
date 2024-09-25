@@ -1,5 +1,5 @@
-import devConfig from "./devConfig";
-import prodConfig from "./prodConfig";
+import devConfig from "./devConfig.ts";
+import prodConfig from "./prodConfig.ts";
 console.log('hihihi')
 
 const getConfig = () => {

@@ -84,6 +84,15 @@ export class renderTimeline {
         this.renderRulerMarkers(timelineData);
     }
 
+    public positionFlags(timelineData) {
+        let timeline = timelineData["timeline"];
+        let flags = timelineData["flags"];
+        let offset = flags[0]["position"] - flags[timeline["activeFlag"]]["position"];
+        timeline['offsetOld'] = timeline['offset'];
+        timeline["offset"] = offset;
+        this.renderRulerMarkers(timelineData);
+    }
+
     private time2Date(timelineData) {
         const flags = timelineData['flags']
         flags.forEach((item) => {
@@ -212,15 +221,6 @@ export class renderTimeline {
         var rows = ["middle", "top", "bottom"];
         let index = (rows.indexOf(row) + 1) % 3;
         return rows[index];
-    }
-
-    public positionFlags(timelineData) {
-        let timeline = timelineData["timeline"];
-        let flags = timelineData["flags"];
-        let offset = flags[0]["position"] - flags[timeline["activeFlag"]]["position"];
-        timeline['offsetOld'] = timeline['offset'];
-        timeline["offset"] = offset;
-        this.renderRulerMarkers(timelineData);
     }
 
     private sortFlags(flags) {

@@ -16,21 +16,7 @@ const renderFlag = (el, binding) => {
 }
 
 const dragTimeline = (el, binding) => {
-    const { timeline, refreshFlag } = binding.value
-    const offset = timeline['offset']
-    const offsetOld = timeline['offsetOld']
-    const containerWidth = timeline["containerWidth"];
-    let animate = null;
-    el.animate([{
-        left: offsetOld + 'px'
-    }, {
-        left: offset + 'px'
-    }], {
-        duration: 550,   // 动画时长
-        easing: 'ease-in-out' // 缓动函数，可选
-    });
-
-
+   //TODO: 拖拽逻辑
 }
 
 export const TimelineFlag = {

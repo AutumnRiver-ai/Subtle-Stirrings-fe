@@ -3,7 +3,6 @@
         <div id="globe-container" class="globe-container">
             <transition name="globe-fade">
                 <div id="globe" v-show="!cardShow"></div>
-                <!-- <div id="globe"></div> -->
             </transition>
         </div>
         <card-news :cardShow="cardShow"></card-news>
@@ -15,16 +14,11 @@ import * as d3 from 'd3';
 import { onMounted, computed, render, h, reactive, ref } from 'vue';
 import { useStore } from 'vuex';
 import { EnvironmentTwoTone } from '@ant-design/icons-vue';
-import CardTrip from '@/components/cards/cardTrip.vue';
 import CardNews from '@/components/cards/cardNews.vue';
-import styleConfig from '@/utils/styleConfig.ts';
-import timelineConfig from '@/api/timeline.config.ts';
-const store = useStore();
-let cardShow = ref(false)
-// const LANDCOLOR = 'lightblue'
-// const COUNTRYCOLOR = 'lightblue'
-// const OCEANCOLOR = '#bbb'
+import styleConfig from '@/../config/styleConfig.ts';
 
+let cardShow = ref(false)
+const store = useStore();
 const OCEANCOLOR = styleConfig['earth']['ocean-color']
 const LANDCOLOR = styleConfig['earth']['land-color']
 const COUNTRYCOLOR = styleConfig['earth']['country-color']
@@ -34,25 +28,22 @@ const X_OFFSET = SIZE / 2
 const Y_OFFSET = SIZE / 2
 let lat_offset = 0
 let lng_offset = 0
+
 onMounted(() => {
-    // return
-    // 地图投影
     const projection = d3.geoOrthographic()
         .scale(SIZE / 2 - 0.5)
         .translate([X_OFFSET, Y_OFFSET])
-
     const path = d3.geoPath().projection(projection);
-
-    // 创建 SVG 元素
     const svg = d3.select("#globe")
         .append("svg")
         .attr("width", SIZE)
         .attr("height", SIZE)
-        // .attr("transform", `translate(0, ${1/4*SIZE})`)
         .style("background-color", OCEANCOLOR)
-        .style('border-radius', '50%');
+        .style('border-radius', '50%')
+
     d3.json('/world.json')
         .then(data => {
+
             svg.append("g")
                 .selectAll("path")
                 .data(data['features'])
@@ -62,7 +53,7 @@ onMounted(() => {
                 .attr("fill", LANDCOLOR)
                 .attr("stroke", COUNTRYCOLOR)
                 .attr("stroke-width", COUNTRYBORDER);
-            // 添加旋转动画
+
             centerPosition(svg, projection, path, {
                 location: [116, 39],
                 preLocation: [116, 39]
@@ -76,15 +67,14 @@ onMounted(() => {
             });
         })
 });
+
 const centerPosition = (svg, projection, path, state, animate = true) => {
     const locationName = state.locationName;
     const longitude = state.location[0];
     const latitude = state.location[1];
-    const preLocationName = state.preLocationName;
+    // const preLocationName = state.preLocationName;
     const preLongitude = state.preLocation[0]
     const preLatitude = state.preLocation[1]
-    // const preLongitude = 116
-    // const preLatitude = 40
     const pointStart = [lng_offset - preLongitude, lat_offset - preLatitude]
     const pointEnd = [lng_offset - longitude, lat_offset - latitude]
 
@@ -109,10 +99,7 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
                         arcIcon.remove()
                     }
                     projection.rotate(interpolateRotation(t));
-                    // svg.attr("transform", `translate(${SIZE / 2}, ${SIZE / 2}) scale(${scale}) rotate(${interpolateRotation(t)}) translate(${-SIZE / 2}, ${-SIZE / 2})`);
-                    // svg.attr("transform", `scale(${1+t})`)
                     svg.selectAll("path").attr("d", path);
-
                     const end0 = -pointStart[0] * (1 - t) - pointEnd[0] * t
                     const end1 = -pointStart[1] * (1 - t) - pointEnd[1] * t
                     if (greatArcPoints.length === 0) {
@@ -130,8 +117,6 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
                     let c_g = 5 * t + 35
                     let c_b = 234
 
-
-
                     const defs = svg.append("defs");
                     const linearGradient = defs.append("linearGradient")
                         .attr("id", "myGradient")
@@ -139,13 +124,14 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
                         .attr("y1", "0%")
                         .attr("x2", "100%")
                         .attr("y2", "100%")
+
                     linearGradient.append("stop")
                         .attr("offset", "0%")
                         .attr("stop-color", `rgb(255, 255, 0)`)
+
                     linearGradient.append("stop")
                         .attr("offset", "100%")
                         .attr("stop-color", `rgb(255, 0, 0)`)
-
 
                     arcPath = svg.append("path")
                         .attr("d", path(greatArc))
@@ -154,6 +140,7 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
                         .attr("stroke-width", 2)
                         .attr("stroke-opacity", 1 - t ** 10 + 0.01)
                     let [offsetX, offsetY] = projection.translate()
+
                     arcIcon = svg.append('circle')
                         .attr('cx', offsetX)
                         .attr('cy', offsetY)
@@ -178,9 +165,8 @@ const centerPosition = (svg, projection, path, state, animate = true) => {
             });
     }
     locate2position()
-
-
 }
+
 const createMarker = (svg, projection, path, point, locationName = '') => {
     const longitude = point[0];
     const latitude = point[1];
@@ -204,7 +190,6 @@ const createMarker = (svg, projection, path, point, locationName = '') => {
     svg.selectAll("path").attr("d", path);
     const container = document.getElementById('marker');
     const icon = h(EnvironmentTwoTone, { spin: false, rotate: 0, style: { fontSize: '30px' } });
-    // const tooltip = h(Tooltip, { title: '当前位置', id: 'tooltip' }, { default: () => icon });
     render(icon, container);
 }
 </script>
@@ -235,7 +220,6 @@ const createMarker = (svg, projection, path, point, locationName = '') => {
         background-image: url('@/assets/background9.jpg');
         background-size: cover;
         background-position: center;
-        /* opacity: 0; */
 
         .globe-fade-enter-active {
             transition: all 1.0s ease-out;

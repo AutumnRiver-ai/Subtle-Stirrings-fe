@@ -1,5 +1,5 @@
 import axios from 'axios'
-import config from '@/../config/devConfig'
+import config from '@/../config/config.ts'
 
 const request = axios.create({
     baseURL: `${config.baseUrl}/autumnRiver`,
@@ -7,12 +7,10 @@ const request = axios.create({
 })
 
 const errorHandler = error => {
-    console.log(error)
+    //TODO: 错误处理
 }
 
-
 request.interceptors.request.use(config => {
-    console.log(config)
     return config
 }, errorHandler)
 
